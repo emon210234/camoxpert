@@ -25,3 +25,9 @@ Fedora:
 ```bash
 sudo dnf install python3.12
 ```
+Windows:
+- Go to the official Python website: https://www.python.org/downloads/windows/
+- Download the installer for Python 3.12
+- Run the installer:
+  - Check “Add Python 3.12 to PATH”
+  - Choose “Install Now” or “Customize Installation” if needed
