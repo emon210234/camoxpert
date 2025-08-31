@@ -9,7 +9,7 @@ CamoXpert is a **dynamically adaptive neural network for camouflaged object dete
 git clone https://github.com/emon210234/camoxpert.git
 cd camoxpert
 ```
-2. **Install python 3.12**
+2. **Install python 3.12** <br>
 On Fedora:
 ```bash
 sudo dnf install python3.12
