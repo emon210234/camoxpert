@@ -1,0 +1,23 @@
+data:
+  root_dir: "data/cod10k-v3"  # Update this path for local/Kaggle
+  train_split: 0.6
+  val_split: 0.2
+  test_split: 0.2
+  img_size: 256
+  batch_size: 8
+  num_workers: 2
+
+augmentation:
+  geometric:
+    rotation_limit: 30
+    scale_limit: 0.2
+  photometric:
+    clahe: true
+    gamma_limit: 80
+  synthetic:
+    motion_blur: true
+    fog: true
+
+paths:
+  checkpoints: "checkpoints/"
+  logs: "logs/"
