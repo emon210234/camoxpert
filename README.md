@@ -26,7 +26,6 @@ Fedora:
 ```bash
 sudo dnf install python3.12
 ```
----
 
 Windows:
 - Go to the official Python website: https://www.python.org/downloads/windows/
@@ -35,7 +34,6 @@ Windows:
   - Check “Add Python 3.12 to PATH”
   - Choose “Install Now” or “Customize Installation” if needed
 
-<br>
 
 macOS:
 ```bash
@@ -43,13 +41,20 @@ brew install python@3.12
 ```
 
 ### 3. Create a virtual environment
+
 Fedora:
 ```bash
 python3.12 -m venv camox-env
 source camox-env/bin/activate
 ```
+
 Windows:
 ```bash
 python -m venv camox-env
 camox-env\Scripts\activate
+```
+
+### 4. Installing dependencies
+```bash
+pip install -r requirements.txt
 ```
