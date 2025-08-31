@@ -5,10 +5,6 @@ CamoXpert is a **dynamically adaptive neural network for camouflaged object dete
 ## Installation
 
 1. **Clone the repository**  
-
 ```bash
 git clone https://github.com/emon210234/camoxpert.git
 cd camoxpert
-
-
-
