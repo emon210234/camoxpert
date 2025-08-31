@@ -21,13 +21,12 @@ git clone https://github.com/emon210234/camoxpert.git
 cd camoxpert
 ```
 ### 2. Install Python 3.12
-<br>
+
 Fedora:
 ```bash
 sudo dnf install python3.12
 ```
-
-<br>
+---
 
 Windows:
 - Go to the official Python website: https://www.python.org/downloads/windows/
