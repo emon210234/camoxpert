@@ -113,7 +113,10 @@ Stage 3: torch.Size([1, 160, 16, 16])
 Stage 4: torch.Size([1, 256, 8, 8])
 Classification output shape: torch.Size([1, 1000])
 ```
-### 7. Current connection status
+
+---
+
+## Current connection status
 
 - Connected:
   - Input Pipeline → Backbone
@@ -126,3 +129,13 @@ Classification output shape: torch.Size([1, 1000])
   - Backbone Features → Expert Modules
   - Expert Modules → Fusion Head
   - Fusion Head → Segmentation Output
+
+---
+
+## Usage
+- Once fully implemented, CamoXpert will support:
+  - Training on custom datasets
+  - Multi-stage expert module adaptation
+  - Segmentation and edge detection outputs
+
+---
