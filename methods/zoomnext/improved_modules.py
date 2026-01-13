@@ -275,6 +275,7 @@ class ProgressiveRefinement(nn.Module):
                 curr_feat = torch.cat([x, curr_pred.sigmoid().detach()], dim=1)
             else:
                 # First iteration: create dummy prediction (zeros) to match expected input channels
+                # Refinement blocks expect in_dim + 1 channels (64 features + 1 prediction channel = 65)
                 dummy_pred = torch.zeros(x.shape[0], 1, x.shape[2], x.shape[3], 
                                         device=x.device, dtype=x.dtype)
                 curr_feat = torch.cat([x, dummy_pred], dim=1)
