@@ -14,3 +14,8 @@ from .zoomnext.zoomnext import (
     CamoXpertV10,
     CamoXpertV11
 )
+from .zoomnext.camoxpert_v12 import (
+    CamoXpertV12,
+    CamoXpertV12_Base,
+    CamoXpertV12_Progressive
+)
