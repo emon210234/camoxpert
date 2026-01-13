@@ -146,6 +146,10 @@ class CamouflageDetectionLoss(nn.Module):
         # 4. Edge Loss (boundary awareness)
         if edge_pred is not None:
             edge_gt = self.extract_edges(mask)
+            # Resize edge_pred to match edge_gt size
+            if edge_pred.shape[-2:] != edge_gt.shape[-2:]:
+                edge_pred = F.interpolate(edge_pred, size=edge_gt.shape[-2:], 
+                                         mode='bilinear', align_corners=False)
             edge_loss = F.binary_cross_entropy(edge_pred, edge_gt, reduction='mean')
         else:
             edge_loss = torch.tensor(0.0, device=pred.device)
@@ -264,13 +268,17 @@ class ProgressiveRefinement(nn.Module):
             predictions: List of predictions at each refinement stage
         """
         predictions = []
-        curr_feat = x
         curr_pred = None
         
         for i in range(self.num_iterations):
             if curr_pred is not None:
-                # Concatenate previous prediction as additional input
                 curr_feat = torch.cat([x, curr_pred.sigmoid().detach()], dim=1)
+            else:
+                # First iteration: create dummy prediction (zeros) to match expected input channels
+                # Refinement blocks expect in_dim + 1 channels (64 features + 1 prediction channel = 65)
+                dummy_pred = torch.zeros(x.shape[0], 1, x.shape[2], x.shape[3], 
+                                        device=x.device, dtype=x.dtype)
+                curr_feat = torch.cat([x, dummy_pred], dim=1)
             
             # Refine features
             curr_feat = self.refinement_blocks[i](curr_feat)
