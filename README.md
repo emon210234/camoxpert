@@ -1,162 +1,204 @@
-# ZoomNeXt: A Unified Collaborative Pyramid Network for Camouflaged Object Detection (TPAMI 2024)
+# CamoXpert
 
-<div align="center">
-  <img src="https://github.com/lartpang/ZoomNeXt/assets/26847524/f43f773b-a81f-4c64-a809-9764b53dd52c" alt="Logo">
-</div>
+Modern camouflaged object detection built on ZoomNeXt, with custom CamoXpert variants (including V11 and V12).
 
-[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/zoomnext-a-unified-collaborative-pyramid/camouflaged-object-segmentation-on-camo)](https://paperswithcode.com/sota/camouflaged-object-segmentation-on-camo?p=zoomnext-a-unified-collaborative-pyramid) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/zoomnext-a-unified-collaborative-pyramid/camouflaged-object-segmentation-on-chameleon)](https://paperswithcode.com/sota/camouflaged-object-segmentation-on-chameleon?p=zoomnext-a-unified-collaborative-pyramid) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/zoomnext-a-unified-collaborative-pyramid/camouflaged-object-segmentation-on-cod)](https://paperswithcode.com/sota/camouflaged-object-segmentation-on-cod?p=zoomnext-a-unified-collaborative-pyramid) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/zoomnext-a-unified-collaborative-pyramid/camouflaged-object-segmentation-on-nc4k)](https://paperswithcode.com/sota/camouflaged-object-segmentation-on-nc4k?p=zoomnext-a-unified-collaborative-pyramid) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/zoomnext-a-unified-collaborative-pyramid/camouflaged-object-segmentation-on-moca-mask)](https://paperswithcode.com/sota/camouflaged-object-segmentation-on-moca-mask?p=zoomnext-a-unified-collaborative-pyramid) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/zoomnext-a-unified-collaborative-pyramid/camouflaged-object-segmentation-on)](https://paperswithcode.com/sota/camouflaged-object-segmentation-on?p=zoomnext-a-unified-collaborative-pyramid)
+This repository includes:
+- training entrypoints for image/video COD
+- evaluation scripts for V11/V12
+- architecture validation utilities
 
+---
 
-```bibtex
-@ARTICLE {ZoomNeXt,
-    title   = {ZoomNeXt: A Unified Collaborative Pyramid Network for Camouflaged Object Detection},
-    author  ={Youwei Pang and Xiaoqi Zhao and Tian-Zhu Xiang and Lihe Zhang and Huchuan Lu},
-    journal = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
-    year    = {2024},
-    doi     = {10.1109/TPAMI.2024.3417329},
-}
+## 1) Environment Setup (Fresh Machine)
+
+### Recommended
+- OS: Linux/WSL (CUDA-capable GPU recommended)
+- Python: 3.10
+- CUDA: compatible with your installed PyTorch build
+
+### Create environment
+```bash
+cd /home/runner/work/camoxpert/camoxpert
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+python -m pip install --upgrade pip
 ```
 
-## Weights and Results
+### Install dependencies
+```bash
+pip install torch==2.1.2 torchvision==0.16.2
+pip install -r requirements.txt
+```
 
-See [Google Drive](https://drive.google.com/drive/folders/1Hp3GIqossOrJYs3bRzJICujMKbZy4WxO?usp=drive_link).
+---
 
-### Performance
+## 2) Dataset Preparation
 
-| Backbone        | CAMO-TE |                      |       | CHAMELEON |                      |       | COD10K-TE |                      |       | NC4K  |                      |       |
-| --------------- | ------- | -------------------- | ----- | --------- | -------------------- | ----- | --------- | -------------------- | ----- | ----- | -------------------- | ----- |
-|                 | $S_m$   | $F^{\omega}_{\beta}$ | MAE   | $S_m$     | $F^{\omega}_{\beta}$ | MAE   | $S_m$     | $F^{\omega}_{\beta}$ | MAE   | $S_m$ | $F^{\omega}_{\beta}$ | MAE   |
-| ResNet-50       | 0.833   | 0.774                | 0.065 | 0.908     | 0.858                | 0.021 | 0.861     | 0.768                | 0.026 | 0.874 | 0.816                | 0.037 |
-| EfficientNet-B1 | 0.848   | 0.803                | 0.056 | 0.916     | 0.870                | 0.020 | 0.863     | 0.773                | 0.024 | 0.876 | 0.823                | 0.036 |
-| EfficientNet-B4 | 0.867   | 0.824                | 0.046 | 0.911     | 0.865                | 0.020 | 0.875     | 0.797                | 0.021 | 0.884 | 0.837                | 0.032 |
-| PVTv2-B2        | 0.874   | 0.839                | 0.047 | 0.922     | 0.884                | 0.017 | 0.887     | 0.818                | 0.019 | 0.892 | 0.852                | 0.030 |
-| PVTv2-B3        | 0.885   | 0.854                | 0.042 | 0.927     | 0.898                | 0.017 | 0.895     | 0.829                | 0.018 | 0.900 | 0.861                | 0.028 |
-| PVTv2-B4        | 0.888   | 0.859                | 0.040 | 0.925     | 0.897                | 0.016 | 0.898     | 0.838                | 0.017 | 0.900 | 0.865                | 0.028 |
-| PVTv2-B5        | 0.889   | 0.857                | 0.041 | 0.924     | 0.885                | 0.018 | 0.898     | 0.827                | 0.018 | 0.903 | 0.863                | 0.028 |
+You need two styles of data config:
 
-| Backbone       | CAD   |                      |       |       |       | MoCA-Mask-TE |                      |       |       |       |
-| -------------- | ----- | -------------------- | ----- | ----- | ----- | ------------ | -------------------- | ----- | ----- | ----- |
-|                | $S_m$ | $F^{\omega}_{\beta}$ | MAE   | mDice | mIoU  | $S_m$        | $F^{\omega}_{\beta}$ | MAE   | mDice | mIoU  |
-| PVTv2-B5 (T=5) | 0.757 | 0.593                | 0.020 | 0.599 | 0.510 | 0.734        | 0.476                | 0.010 | 0.497 | 0.422 |
+### A) Image COD training (`main_for_image.py`)
+`configs/camoxpert_v11.py` contains `root_path`, `train_image_path`, `train_mask_path`, etc.
+Update these to your local paths before training.
 
-## Prepare Data
-
-> [!note]
->
-> - CAD dataset can be found at https://drive.google.com/file/d/1XhrC6NSekGOAAM7osLne3p46pj1tLFdI/view?usp=sharing
-> - COD dataset for testing can be found at https://github.com/GewelsJI/SINet-V2?tab=readme-ov-file#41-trainingtesting (https://drive.google.com/file/d/1V0iSEdYJrT0Y_DHZfVGMg6TySFRNTy4o/view?usp=sharing)
->
-> Based on the following data setup, the performance of the VCOD dataset evaluated directly using the training script is now consistent with the paper.
-
-Set all dataset information to the `dataset.yaml` as follows.
-
-<details>
-<summary>
-Example of the config file (dataset.yaml):
-</summary>
+### B) Video + general eval pipeline (`main_for_video.py`)
+Create `/home/runner/work/camoxpert/camoxpert/dataset.yaml`:
 
 ```yaml
-# VCOD Datasets
-moca_mask_tr:
-  {
-    root: "YOUR-VCOD-DATASETS-ROOT/MoCA-Mask/MoCA_Video/TrainDataset_per_sq",
-    image: { path: "*/Imgs", suffix: ".jpg" },
-    mask: { path: "*/GT", suffix: ".png" },
-    start_idx: 0,
-    end_idx: 0
-  }
-moca_mask_te:
-  {
-    root: "YOUR-VCOD-DATASETS-ROOT/MoCA-Mask/MoCA_Video/TestDataset_per_sq",
-    image: { path: "*/Imgs", suffix: ".jpg" },
-    mask: { path: "*/GT", suffix: ".png" },
-    start_idx: 0,
-    end_idx: -2
-  }
-cad:
-  {
-    root: "YOUR-VCOD-DATASETS-ROOT/CamouflagedAnimalDataset",
-    image: { path: "original_data/*/frames", suffix: ".png" },
-    mask: { path: "converted_mask/*/groundtruth", suffix: ".png" },
-    start_idx: 0,
-    end_idx: 0
-  }
-
-# ICOD Datasets
-cod10k_tr:
-  {
-    root: "YOUR-ICOD-DATASETS-ROOT/Train/COD10K-TR",
-    image: { path: "Image", suffix: ".jpg" },
-    mask: { path: "Mask", suffix: ".png" },
-  }
-camo_tr:
-  {
-    root: "YOUR-ICOD-DATASETS-ROOT/Train/CAMO-TR",
-    image: { path: "Image", suffix: ".jpg" },
-    mask: { path: "Mask", suffix: ".png" },
-  }
-cod10k_te:
-  {
-    root: "YOUR-ICOD-DATASETS-ROOT/Test/COD10K-TE",
-    image: { path: "Image", suffix: ".jpg" },
-    mask: { path: "Mask", suffix: ".png" },
-  }
-camo_te:
-  {
-    root: "YOUR-ICOD-DATASETS-ROOT/Test/CAMO-TE",
-    image: { path: "Image", suffix: ".jpg" },
-    mask: { path: "Mask", suffix: ".png" },
-  }
-chameleon:
-  {
-    root: "YOUR-ICOD-DATASETS-ROOT/Test/CHAMELEON",
-    image: { path: "Image", suffix: ".jpg" },
-    mask: { path: "Mask", suffix: ".png" },
-  }
-nc4k:
-  {
-    root: "YOUR-ICOD-DATASETS-ROOT/Test/NC4K",
-    image: { path: "Imgs", suffix: ".jpg" },
-    mask: { path: "GT", suffix: ".png" },
-  }
-```
-
-</details>
-
-## Install Requirements
-
-* torch==2.1.2
-* torchvision==0.16.2
-* Others: `pip install -r requirements.txt`
-
-## Evaluation
-
-```shell
-# ICOD
-python main_for_image.py --config configs/icod_train.py --model-name <MODEL_NAME> --evaluate --load-from <TRAINED_WEIGHT>
 # VCOD
-python main_for_video.py --config configs/vcod_finetune.py --model-name <MODEL_NAME> --evaluate --load-from <TRAINED_WEIGHT>
+moca_mask_tr:
+  { root: "YOUR-VCOD-ROOT/MoCA-Mask/MoCA_Video/TrainDataset_per_sq", image: { path: "*/Imgs", suffix: ".jpg" }, mask: { path: "*/GT", suffix: ".png" }, start_idx: 0, end_idx: 0 }
+moca_mask_te:
+  { root: "YOUR-VCOD-ROOT/MoCA-Mask/MoCA_Video/TestDataset_per_sq", image: { path: "*/Imgs", suffix: ".jpg" }, mask: { path: "*/GT", suffix: ".png" }, start_idx: 0, end_idx: -2 }
+cad:
+  { root: "YOUR-VCOD-ROOT/CamouflagedAnimalDataset", image: { path: "original_data/*/frames", suffix: ".png" }, mask: { path: "converted_mask/*/groundtruth", suffix: ".png" }, start_idx: 0, end_idx: 0 }
+
+# ICOD
+cod10k_tr:
+  { root: "YOUR-ICOD-ROOT/Train/COD10K-TR", image: { path: "Image", suffix: ".jpg" }, mask: { path: "Mask", suffix: ".png" } }
+camo_tr:
+  { root: "YOUR-ICOD-ROOT/Train/CAMO-TR", image: { path: "Image", suffix: ".jpg" }, mask: { path: "Mask", suffix: ".png" } }
+cod10k_te:
+  { root: "YOUR-ICOD-ROOT/Test/COD10K-TE", image: { path: "Image", suffix: ".jpg" }, mask: { path: "Mask", suffix: ".png" } }
+camo_te:
+  { root: "YOUR-ICOD-ROOT/Test/CAMO-TE", image: { path: "Image", suffix: ".jpg" }, mask: { path: "Mask", suffix: ".png" } }
+chameleon:
+  { root: "YOUR-ICOD-ROOT/Test/CHAMELEON", image: { path: "Image", suffix: ".jpg" }, mask: { path: "Mask", suffix: ".png" } }
+nc4k:
+  { root: "YOUR-ICOD-ROOT/Test/NC4K", image: { path: "Imgs", suffix: ".jpg" }, mask: { path: "GT", suffix: ".png" } }
 ```
 
-## Training
+---
 
-### Image Camouflaged Object Detection
+## 3) Quick Sanity Checks
 
-```shell
-python main_for_image.py --config configs/icod_train.py --pretrained --model-name EffB1_ZoomNeXt
-python main_for_image.py --config configs/icod_train.py --pretrained --model-name EffB4_ZoomNeXt
-python main_for_image.py --config configs/icod_train.py --pretrained --model-name PvtV2B2_ZoomNeXt
-python main_for_image.py --config configs/icod_train.py --pretrained --model-name PvtV2B3_ZoomNeXt
-python main_for_image.py --config configs/icod_train.py --pretrained --model-name PvtV2B4_ZoomNeXt
-python main_for_image.py --config configs/icod_train.py --pretrained --model-name PvtV2B5_ZoomNeXt
-python main_for_image.py --config configs/icod_train.py --pretrained --model-name RN50_ZoomNeXt
+### Check architecture (no dataset required)
+```bash
+python verify_architecture.py
 ```
 
-### Video Camouflaged Object Detection
+### Verify model imports
+Available CamoXpert classes are exported from:
+`/home/runner/work/camoxpert/camoxpert/methods/__init__.py`
 
-1. Pretrain on COD10K-TR: `python main_for_image.py --config configs/icod_pretrain.py --info pretrain --model-name PvtV2B5_ZoomNeXt --pretrained`
-2. Finetune on MoCA-Mask-TR: `python main_for_video.py --config configs/vcod_finetune.py --info finetune --model-name videoPvtV2B5_ZoomNeXt --load-from <PRETAINED_WEIGHT>`
+---
 
-> [!note]
-> If you meets the OOM problem, you can try to reduce the batch size or switch on the `--use-checkpoint` flag:
-> `python main_for_image.py/main_for_video.py <your config> --use-checkpoint`
+## 4) Training
+
+## A) Image COD (CamoXpert V11 baseline)
+
+```bash
+python main_for_image.py \
+  --config configs/camoxpert_v11.py \
+  --model-name CamoXpertV11 \
+  --save-dir checkpoints_v11
+```
+
+Resume from a checkpoint:
+```bash
+python main_for_image.py \
+  --config configs/camoxpert_v11.py \
+  --model-name CamoXpertV11 \
+  --load-from checkpoints_v11/zoomnext_epoch_120.pth \
+  --save-dir checkpoints_v11
+```
+
+## B) Image COD (CamoXpert V12)
+
+Use one of:
+- `CamoXpertV12`
+- `CamoXpertV12_Base`
+- `CamoXpertV12_Progressive`
+
+```bash
+python main_for_image.py \
+  --config configs/camoxpert_v11.py \
+  --model-name CamoXpertV12_Base \
+  --save-dir checkpoints_v12
+```
+
+> Note: there is currently no committed `configs/camoxpert_v12.py`; reusing `configs/camoxpert_v11.py` is the fastest path, then tune hyperparameters as needed.
+
+## C) Video COD (MoCA/CAD finetuning)
+
+```bash
+python main_for_video.py \
+  --config configs/vcod_finetune.py \
+  --data-cfg dataset.yaml \
+  --model-name videoPvtV2B5_ZoomNeXt \
+  --pretrained
+```
+
+Evaluate mode:
+```bash
+python main_for_video.py \
+  --config configs/vcod_finetune.py \
+  --data-cfg dataset.yaml \
+  --model-name videoPvtV2B5_ZoomNeXt \
+  --load-from <CHECKPOINT_PATH> \
+  --evaluate
+```
+
+---
+
+## 5) Evaluation & Metric Extraction (for paper tables)
+
+### V11 evaluation (Sm + MAE on CAMO/CHAMELEON/COD10K/NC4K)
+```bash
+python test_v11.py | tee results_v11.txt
+```
+
+### V12 evaluation (Sm + MAE on CAMO/CHAMELEON/COD10K/NC4K)
+```bash
+python test_v12.py | tee results_v12.txt
+```
+
+Both scripts print a final table:
+- `S-measure (↑)`
+- `MAE (↓)`
+
+Use these values directly for IEEE result tables.
+
+---
+
+## 6) Reproducibility Checklist (Publication-Oriented)
+
+- Fix random seed where possible.
+- Keep dataset versions and directory layout fixed.
+- Record:
+  - git commit hash
+  - config file used
+  - checkpoint path
+  - GPU model / driver / CUDA
+  - exact metric table output (`results_*.txt`)
+- Run each final evaluation at least 3 times and report mean ± std.
+
+---
+
+## 7) Common Issues
+
+### Out-of-memory
+- lower `batch_size` in config
+- reduce input size (`shape`)
+- use fewer workers
+
+### Missing checkpoints in test scripts
+Edit:
+- `CHECKPOINT_PATH`
+- `DATA_ROOT`
+inside `test_v11.py` / `test_v12.py`.
+
+### Dataset not found / empty
+Check exact folder names:
+- `Image` vs `Imgs`
+- `Mask` vs `GT`
+
+---
+
+## 8) Useful Files
+
+- `/home/runner/work/camoxpert/camoxpert/main_for_image.py` — image COD training
+- `/home/runner/work/camoxpert/camoxpert/main_for_video.py` — video COD training/eval
+- `/home/runner/work/camoxpert/camoxpert/test_v11.py` — V11 benchmark script
+- `/home/runner/work/camoxpert/camoxpert/test_v12.py` — V12 benchmark script
+- `/home/runner/work/camoxpert/camoxpert/verify_architecture.py` — architecture sanity checks
+- `/home/runner/work/camoxpert/camoxpert/configs/` — experiment configs
