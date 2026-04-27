@@ -18,7 +18,7 @@ This repository includes:
 
 ### Create environment
 ```bash
-cd /home/runner/work/camoxpert/camoxpert
+cd camoxpert
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 python -m pip install --upgrade pip
@@ -41,7 +41,7 @@ You need two styles of data config:
 Update these to your local paths before training.
 
 ### B) Video + general eval pipeline (`main_for_video.py`)
-Create `/home/runner/work/camoxpert/camoxpert/dataset.yaml`:
+Create `dataset.yaml` in the repository root:
 
 ```yaml
 # VCOD
@@ -78,7 +78,7 @@ python verify_architecture.py
 
 ### Verify model imports
 Available CamoXpert classes are exported from:
-`/home/runner/work/camoxpert/camoxpert/methods/__init__.py`
+`methods/__init__.py`
 
 ---
 
@@ -196,9 +196,9 @@ Check exact folder names:
 
 ## 8) Useful Files
 
-- `/home/runner/work/camoxpert/camoxpert/main_for_image.py` — image COD training
-- `/home/runner/work/camoxpert/camoxpert/main_for_video.py` — video COD training/eval
-- `/home/runner/work/camoxpert/camoxpert/test_v11.py` — V11 benchmark script
-- `/home/runner/work/camoxpert/camoxpert/test_v12.py` — V12 benchmark script
-- `/home/runner/work/camoxpert/camoxpert/verify_architecture.py` — architecture sanity checks
-- `/home/runner/work/camoxpert/camoxpert/configs/` — experiment configs
+- `main_for_image.py` — image COD training
+- `main_for_video.py` — video COD training/eval
+- `test_v11.py` — V11 benchmark script
+- `test_v12.py` — V12 benchmark script
+- `verify_architecture.py` — architecture sanity checks
+- `configs/` — experiment configs
