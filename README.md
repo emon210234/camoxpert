@@ -117,6 +117,7 @@ python main_for_image.py \
 ```
 
 > Note: there is currently no committed `configs/camoxpert_v12.py`; reusing `configs/camoxpert_v11.py` is the fastest path, then tune hyperparameters as needed.
+> This works because `main_for_image.py` consumes the same `cfg.train.*` structure and the V12 classes use the same multi-scale input keys (`image_l`, `image_m`, `image_s`) expected by the current training loop.
 
 ## C) Video COD (MoCA/CAD finetuning)
 
