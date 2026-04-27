@@ -84,7 +84,7 @@ Available CamoXpert classes are exported from:
 
 ## 4) Training
 
-## A) Image COD (CamoXpert V11 baseline)
+### A) Image COD (CamoXpert V11 baseline)
 
 ```bash
 python main_for_image.py \
@@ -102,7 +102,7 @@ python main_for_image.py \
   --save-dir checkpoints_v11
 ```
 
-## B) Image COD (CamoXpert V12)
+### B) Image COD (CamoXpert V12)
 
 Use one of:
 - `CamoXpertV12`
@@ -119,7 +119,7 @@ python main_for_image.py \
 > Note: there is currently no committed `configs/camoxpert_v12.py`; reusing `configs/camoxpert_v11.py` is the fastest path, then tune hyperparameters as needed.
 > This works because `main_for_image.py` consumes the same `cfg.train.*` structure and the V12 classes use the same multi-scale input keys (`image_l`, `image_m`, `image_s`) expected by the current training loop.
 
-## C) Video COD (MoCA/CAD finetuning)
+### C) Video COD (MoCA/CAD finetuning)
 
 ```bash
 python main_for_video.py \
