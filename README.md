@@ -80,6 +80,14 @@ python verify_architecture.py
 Available CamoXpert classes are exported from:
 `methods/__init__.py`
 
+Core names you can use with `--model-name`:
+- `CamoXpertV11`
+- `CamoXpertV12`
+- `CamoXpertV12_Base`
+- `CamoXpertV12_Progressive`
+- `PvtV2B5_ZoomNeXt`
+- `videoPvtV2B5_ZoomNeXt`
+
 ---
 
 ## 4) Training
@@ -171,6 +179,22 @@ Use these values directly for IEEE result tables.
   - GPU model / driver / CUDA
   - exact metric table output (`results_*.txt`)
 - Run each final evaluation at least 3 times and report mean +/- std.
+
+Example aggregation command:
+```bash
+python - <<'PY'
+import re, statistics, pathlib
+vals = {"Sm": [], "MAE": []}
+for p in sorted(pathlib.Path(".").glob("results_v12_run*.txt")):
+    txt = p.read_text(encoding="utf-8", errors="ignore")
+    for m in re.finditer(r"\|\s*COD10K\s*\|\s*([0-9.]+)\s*\|\s*([0-9.]+)\s*\|", txt):
+        vals["Sm"].append(float(m.group(1)))
+        vals["MAE"].append(float(m.group(2)))
+for k, arr in vals.items():
+    if arr:
+        print(f"{k}: mean={statistics.mean(arr):.4f}, std={statistics.pstdev(arr):.4f}, n={len(arr)}")
+PY
+```
 
 ---
 
