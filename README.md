@@ -124,7 +124,7 @@ python main_for_image.py \
   --save-dir checkpoints_v12
 ```
 
-> Note: there is currently no committed `configs/camoxpert_v12.py`; reusing `configs/camoxpert_v11.py` is the fastest path. This works because `main_for_image.py` consumes the same `cfg.train.*` structure and the V12 classes use the same multi-scale input keys (`image_l`, `image_m`, `image_s`) expected by the current training loop. Typical first adjustments for V12 are reducing `batch_size` (higher memory use), reducing `lr` slightly (e.g., from `5e-5` to `3e-5`), and keeping `use_amp=True` to control VRAM.
+> Note: V12 models currently reuse `configs/camoxpert_v11.py`. For V12 training, start by reducing `batch_size`, lowering `lr` (e.g., `3e-5`), and keeping `use_amp=True` because V12 usually needs more GPU memory.
 
 ### C) Video COD (MoCA/CAD finetuning)
 
@@ -179,22 +179,7 @@ Use these values directly for IEEE result tables.
   - GPU model / driver / CUDA
   - exact metric table output (`results_*.txt`)
 - Run each final evaluation at least 3 times and report mean +/- std.
-
-Example aggregation command:
-```bash
-python - <<'PY'
-import re, statistics, pathlib
-vals = {"Sm": [], "MAE": []}
-for p in sorted(pathlib.Path(".").glob("results_v12_run*.txt")):
-    txt = p.read_text(encoding="utf-8", errors="ignore")
-    for m in re.finditer(r"\|\s*COD10K\s*\|\s*([0-9.]+)\s*\|\s*([0-9.]+)\s*\|", txt):
-        vals["Sm"].append(float(m.group(1)))
-        vals["MAE"].append(float(m.group(2)))
-for k, arr in vals.items():
-    if arr:
-        print(f"{k}: mean={statistics.mean(arr):.4f}, std={statistics.pstdev(arr):.4f}, n={len(arr)}")
-PY
-```
+- Save each run to a separate file (for example: `results_v12_run1.txt`, `results_v12_run2.txt`, `results_v12_run3.txt`) and compute mean/std in your analysis notebook or spreadsheet.
 
 ---
 
