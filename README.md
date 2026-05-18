@@ -21,7 +21,9 @@ CamoXpert is a camouflaged object detection project built on ZoomNeXt, with the 
 ## 2. Fast restart (from a clean machine)
 
 Set your local repository root:
-`export CAMOXPERT_ROOT=/path/to/camoxpert`
+```bash
+export CAMOXPERT_ROOT=/path/to/camoxpert
+```
 
 If you want this to persist across sessions, add that line to your shell profile (for example `~/.bashrc` or `~/.zshrc`).
 
@@ -30,7 +32,9 @@ If you want this to persist across sessions, add that line to your shell profile
 ```bash
 cd "$CAMOXPERT_ROOT"
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+source .venv/bin/activate
+# Windows PowerShell:
+# .venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 ```
 
