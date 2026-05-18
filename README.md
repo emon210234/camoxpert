@@ -26,8 +26,8 @@ source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
 # 2) Install PyTorch (choose your CUDA build)
 # Use the PyTorch selector to match your CUDA version (wheel tags like cu118/cu121):
 # https://pytorch.org/get-started/locally/
-# Example (tested CUDA 12.1 build):
-# pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu121
+# Example (tested CUDA 11.8 build):
+# pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu118
 # Example (CPU-only, tested):
 # pip install torch==2.1.2 torchvision==0.16.2
 #
@@ -48,7 +48,7 @@ train = dict(
     data=dict(
         root_path="/path/to/COD10K-v3",
         train_image_path="Train/Image",
-        train_mask_path="Train/Mask",   # or Train/GT_Object depending on your dataset
+        train_mask_path="Train/GT_Object",
         test_image_path="Test/Image",
         test_mask_path="Test/GT_Object",
     )
@@ -92,7 +92,9 @@ nc4k:
 # V11 baseline
 python main_for_image.py --config configs/camoxpert_v11.py --model-name CamoXpertV11 --save-dir checkpoints_v11
 
-# V12 base (you can reuse the V11 config; copying is optional for experiment tracking)
+# V12 base (reuse V11 config or create a separate one)
+python main_for_image.py --config configs/camoxpert_v11.py --model-name CamoXpertV12_Base --save-dir checkpoints_v12
+# Optional: copy for experiment tracking
 cp configs/camoxpert_v11.py configs/camoxpert_v12.py
 # Update root_path/train_* paths and (optionally) batch size for memory
 python main_for_image.py --config configs/camoxpert_v12.py --model-name CamoXpertV12_Base --save-dir checkpoints_v12
@@ -157,4 +159,4 @@ verify_architecture.py # Sanity check for V12 model
 
 ## License
 
-No explicit license is provided. Treat the code as proprietary until you obtain permission from the repository owner.
+No explicit license is provided. Treat the code as proprietary until you obtain written permission from the repository owner.
