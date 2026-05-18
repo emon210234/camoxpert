@@ -37,10 +37,7 @@ python -m pip install --upgrade pip
 ```bash
 pip install torch==2.1.2 torchvision==0.16.2
 pip install -r requirements.txt
-pip install prettytable
 ```
-
-> `prettytable` is required by `test_v11.py` and `test_v12.py`.
 
 ---
 
