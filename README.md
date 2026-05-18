@@ -20,8 +20,10 @@ CamoXpert is a camouflaged object detection project built on ZoomNeXt, with the 
 
 ## 2. Fast restart (from a clean machine)
 
-Set your local repository root once:
-`CAMOXPERT_ROOT=/path/to/camoxpert`
+Set your local repository root:
+`export CAMOXPERT_ROOT=/path/to/camoxpert`
+
+If you want this to persist across sessions, add that line to your shell profile (for example `~/.bashrc` or `~/.zshrc`).
 
 ### 2.1 Create environment
 
@@ -34,12 +36,17 @@ python -m pip install --upgrade pip
 
 ### 2.2 Install dependencies
 
+Install a PyTorch build that matches your CUDA/CPU environment first:
+
 ```bash
-pip install torch==2.1.2 torchvision==0.16.2
+# Example (CUDA 12.1)
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+# Then install project dependencies
 pip install -r requirements.txt
 ```
 
-> If your CUDA runtime differs, install a compatible PyTorch build from https://pytorch.org/get-started/locally/ and then run `pip install -r requirements.txt`.
+> If you use a different CUDA version (or CPU-only), select the correct command at https://pytorch.org/get-started/locally/ and then install `requirements.txt`.
 
 ---
 
@@ -56,6 +63,8 @@ Set:
 - `train.data.train_mask_path`
 - `train.data.test_image_path`
 - `train.data.test_mask_path`
+
+This same config file is currently used by both V11 and V12 image-training commands in this repository.
 
 ### 3.2 Video/benchmark YAML (used by `main_for_video.py`)
 
@@ -107,6 +116,8 @@ python main_for_image.py \
   --model-name CamoXpertV11 \
   --save-dir checkpoints_v11
 ```
+
+Note: `main_for_image.py` currently constructs models with `pretrained=True` internally.
 
 ### 5.2 Train V12 (recommended for paper)
 
@@ -174,7 +185,7 @@ python main_for_video.py \
   --config configs/vcod_finetune.py \
   --data-cfg dataset.yaml \
   --model-name videoPvtV2B5_ZoomNeXt \
-  --load-from <CHECKPOINT_PATH> \
+  --load-from /path/to/checkpoint.pth \
   --evaluate
 ```
 
