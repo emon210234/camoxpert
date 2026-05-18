@@ -20,13 +20,13 @@ CamoXpert is a camouflaged object detection project built on ZoomNeXt, with the 
 
 ## 2. Fast restart (from a clean machine)
 
-Assume repository path:
-`/home/runner/work/camoxpert/camoxpert`
+Set your local repository root once:
+`CAMOXPERT_ROOT=/path/to/camoxpert`
 
 ### 2.1 Create environment
 
 ```bash
-cd /home/runner/work/camoxpert/camoxpert
+cd "$CAMOXPERT_ROOT"
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 python -m pip install --upgrade pip
@@ -39,6 +39,8 @@ pip install torch==2.1.2 torchvision==0.16.2
 pip install -r requirements.txt
 ```
 
+> If your CUDA runtime differs, install a compatible PyTorch build from https://pytorch.org/get-started/locally/ and then run `pip install -r requirements.txt`.
+
 ---
 
 ## 3. Data configuration
@@ -46,7 +48,7 @@ pip install -r requirements.txt
 ### 3.1 Image COD training config (used by `main_for_image.py`)
 
 Edit:
-`/home/runner/work/camoxpert/camoxpert/configs/camoxpert_v11.py`
+`$CAMOXPERT_ROOT/configs/camoxpert_v11.py`
 
 Set:
 - `train.data.root_path`
@@ -58,7 +60,7 @@ Set:
 ### 3.2 Video/benchmark YAML (used by `main_for_video.py`)
 
 Create:
-`/home/runner/work/camoxpert/camoxpert/dataset.yaml`
+`$CAMOXPERT_ROOT/dataset.yaml`
 
 Minimal template:
 
@@ -86,7 +88,7 @@ nc4k:
 ## 4. Sanity check before long runs
 
 ```bash
-cd /home/runner/work/camoxpert/camoxpert
+cd "$CAMOXPERT_ROOT"
 python verify_architecture.py
 ```
 
@@ -99,7 +101,7 @@ This validates model construction and forward pass behavior for the V12 stack.
 ### 5.1 Train V11 baseline (image COD)
 
 ```bash
-cd /home/runner/work/camoxpert/camoxpert
+cd "$CAMOXPERT_ROOT"
 python main_for_image.py \
   --config configs/camoxpert_v11.py \
   --model-name CamoXpertV11 \
@@ -109,7 +111,7 @@ python main_for_image.py \
 ### 5.2 Train V12 (recommended for paper)
 
 ```bash
-cd /home/runner/work/camoxpert/camoxpert
+cd "$CAMOXPERT_ROOT"
 python main_for_image.py \
   --config configs/camoxpert_v11.py \
   --model-name CamoXpertV12_Base \
@@ -126,13 +128,13 @@ Available V12 names:
 ## 6. Evaluate and extract paper metrics
 
 Set `CHECKPOINT_PATH` and `DATA_ROOT` in:
-- `/home/runner/work/camoxpert/camoxpert/test_v11.py`
-- `/home/runner/work/camoxpert/camoxpert/test_v12.py`
+- `$CAMOXPERT_ROOT/test_v11.py`
+- `$CAMOXPERT_ROOT/test_v12.py`
 
 Then run:
 
 ```bash
-cd /home/runner/work/camoxpert/camoxpert
+cd "$CAMOXPERT_ROOT"
 python test_v11.py | tee results_v11.txt
 python test_v12.py | tee results_v12.txt
 ```
@@ -156,7 +158,7 @@ For publication tables, keep all raw run logs and report mean/std from repeated 
 Train/finetune:
 
 ```bash
-cd /home/runner/work/camoxpert/camoxpert
+cd "$CAMOXPERT_ROOT"
 python main_for_video.py \
   --config configs/vcod_finetune.py \
   --data-cfg dataset.yaml \
@@ -167,7 +169,7 @@ python main_for_video.py \
 Evaluate:
 
 ```bash
-cd /home/runner/work/camoxpert/camoxpert
+cd "$CAMOXPERT_ROOT"
 python main_for_video.py \
   --config configs/vcod_finetune.py \
   --data-cfg dataset.yaml \
