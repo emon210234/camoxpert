@@ -30,6 +30,8 @@ source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
 # pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu121
 # Example (CPU-only):
 # pip install torch==2.1.2 torchvision==0.16.2
+#
+# Note: the versions above are known to work with this repo; use pytorch.org for the latest compatible releases.
 
 # 3) Install remaining dependencies
 pip install -r requirements.txt
@@ -88,7 +90,7 @@ nc4k:
 # V11 baseline
 python main_for_image.py --config configs/camoxpert_v11.py --model-name CamoXpertV11 --save-dir checkpoints_v11
 
-# V12 base (copy config for clarity; same data fields)
+# V12 base (create your own V12 config; repository does not ship a default)
 cp configs/camoxpert_v11.py configs/camoxpert_v12.py
 # Update root_path/train_* paths and (optionally) batch size for memory
 python main_for_image.py --config configs/camoxpert_v12.py --model-name CamoXpertV12_Base --save-dir checkpoints_v12
@@ -144,7 +146,7 @@ verify_architecture.py # Sanity check for V12 model
 
 ## Notes
 
-- `test_v11.py` uses `DEVICE = 'cuda'` by default. Switch to `'cpu'` if needed.
+- `test_v11.py` hardcodes `DEVICE = 'cuda'`. Switch to `'cpu'` in the script if needed (no CLI flag).
 - Verify dataset folder names (`Image/Mask` vs `Imgs/GT`) and update configs accordingly.
 - For reproducibility, keep a record of checkpoint paths and data versions used in your paper.
 - `--pretrained` loads backbone weights; use `--load-from` to resume a full CamoXpert checkpoint.
