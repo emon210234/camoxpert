@@ -55,6 +55,7 @@ train = dict(
 )
 ```
 The training script does not auto-detect folder conventions—make sure these paths match your dataset layout.
+If you are using COD10K-v3, masks are typically under `Train/GT_Object`; older releases may use `Train/Mask`.
 
 ### Video COD (VCOD)
 `main_for_video.py` expects a dataset YAML. Create `dataset.yaml` in the repo root (or pass `--data-cfg`).
@@ -99,7 +100,7 @@ python main_for_image.py --config configs/camoxpert_v12.py --model-name CamoXper
 # V12 progressive refinement
 python main_for_image.py --config configs/camoxpert_v12.py --model-name CamoXpertV12_Progressive --save-dir checkpoints_v12
 ```
-V12 uses the same config schema as V11; only the model name changes unless you want to tune hyperparameters.
+V12 uses the same config schema as V11; set dataset paths in whichever config you use and only change hyperparameters if needed.
 
 ### Video COD (VCOD)
 ```bash
@@ -156,4 +157,4 @@ verify_architecture.py # Sanity check for V12 model
 
 ## License
 
-No explicit license is provided. Contact the repository owner for usage permissions.
+No explicit license is provided. Treat the code as proprietary until you obtain permission from the repository owner.
