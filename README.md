@@ -24,6 +24,8 @@ python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
 
 # 2) Install PyTorch (choose your CUDA build)
+# Use the PyTorch selector to match your CUDA version (wheel tags like cu118/cu121):
+# https://pytorch.org/get-started/locally/
 # Example (CUDA 12.1):
 # pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu121
 # Example (CPU-only):
@@ -86,8 +88,9 @@ nc4k:
 # V11 baseline
 python main_for_image.py --config configs/camoxpert_v11.py --model-name CamoXpertV11 --save-dir checkpoints_v11
 
-# V12 base (copy config and adjust paths)
+# V12 base (copy config for clarity; same data fields)
 cp configs/camoxpert_v11.py configs/camoxpert_v12.py
+# Update root_path/train_* paths and (optionally) batch size for memory
 python main_for_image.py --config configs/camoxpert_v12.py --model-name CamoXpertV12_Base --save-dir checkpoints_v12
 
 # V12 progressive refinement
@@ -96,11 +99,11 @@ python main_for_image.py --config configs/camoxpert_v12.py --model-name CamoXper
 
 ### Video COD (VCOD)
 ```bash
-# Pretrain (ICOD)
-python main_for_image.py --config configs/icod_pretrain.py --model-name PvtV2B5_ZoomNeXt --pretrained
+# Pretrain (ICOD backbone init)
+python main_for_image.py --config configs/icod_pretrain.py --model-name PvtV2B5_ZoomNeXt --pretrained --save-dir checkpoints_icod
 
-# Finetune (VCOD)
-python main_for_video.py --config configs/vcod_finetune.py --data-cfg dataset.yaml --model-name videoPvtV2B5_ZoomNeXt --pretrained
+# Finetune (VCOD) from ICOD checkpoint
+python main_for_video.py --config configs/vcod_finetune.py --data-cfg dataset.yaml --model-name videoPvtV2B5_ZoomNeXt --load-from checkpoints_icod/<PRETRAIN_CKPT>.pth
 ```
 
 > If you hit OOM, reduce batch size in the config or add `--use-checkpoint` to enable gradient checkpointing.
@@ -144,6 +147,7 @@ verify_architecture.py # Sanity check for V12 model
 - `test_v11.py` uses `DEVICE = 'cuda'` by default. Switch to `'cpu'` if needed.
 - Verify dataset folder names (`Image/Mask` vs `Imgs/GT`) and update configs accordingly.
 - For reproducibility, keep a record of checkpoint paths and data versions used in your paper.
+- `--pretrained` loads backbone weights; use `--load-from` to resume a full CamoXpert checkpoint.
 
 ## License
 
