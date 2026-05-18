@@ -26,12 +26,12 @@ source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
 # 2) Install PyTorch (choose your CUDA build)
 # Use the PyTorch selector to match your CUDA version (wheel tags like cu118/cu121):
 # https://pytorch.org/get-started/locally/
-# Example (CUDA 12.1):
+# Example (tested CUDA 12.1 build):
 # pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu121
-# Example (CPU-only):
+# Example (CPU-only, tested):
 # pip install torch==2.1.2 torchvision==0.16.2
 #
-# Note: the versions above are known to work with this repo; use pytorch.org for the latest compatible releases.
+# Note: the versions above are tested with this repo; use pytorch.org for newer stable releases if desired.
 
 # 3) Install remaining dependencies
 pip install -r requirements.txt
