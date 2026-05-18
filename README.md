@@ -54,6 +54,7 @@ train = dict(
     )
 )
 ```
+The training script does not auto-detect folder conventions—make sure these paths match your dataset layout.
 
 ### Video COD (VCOD)
 `main_for_video.py` expects a dataset YAML. Create `dataset.yaml` in the repo root (or pass `--data-cfg`).
@@ -90,7 +91,7 @@ nc4k:
 # V11 baseline
 python main_for_image.py --config configs/camoxpert_v11.py --model-name CamoXpertV11 --save-dir checkpoints_v11
 
-# V12 base (create your own V12 config; repository does not ship a default)
+# V12 base (you can reuse the V11 config; copying is optional for experiment tracking)
 cp configs/camoxpert_v11.py configs/camoxpert_v12.py
 # Update root_path/train_* paths and (optionally) batch size for memory
 python main_for_image.py --config configs/camoxpert_v12.py --model-name CamoXpertV12_Base --save-dir checkpoints_v12
@@ -98,6 +99,7 @@ python main_for_image.py --config configs/camoxpert_v12.py --model-name CamoXper
 # V12 progressive refinement
 python main_for_image.py --config configs/camoxpert_v12.py --model-name CamoXpertV12_Progressive --save-dir checkpoints_v12
 ```
+V12 uses the same config schema as V11; only the model name changes unless you want to tune hyperparameters.
 
 ### Video COD (VCOD)
 ```bash
@@ -147,6 +149,7 @@ verify_architecture.py # Sanity check for V12 model
 ## Notes
 
 - `test_v11.py` hardcodes `DEVICE = 'cuda'`. Switch to `'cpu'` in the script if needed (no CLI flag).
+- `test_v12.py` auto-selects CUDA if available; edit `DEVICE` to force CPU.
 - Verify dataset folder names (`Image/Mask` vs `Imgs/GT`) and update configs accordingly.
 - For reproducibility, keep a record of checkpoint paths and data versions used in your paper.
 - `--pretrained` loads backbone weights; use `--load-from` to resume a full CamoXpert checkpoint.
