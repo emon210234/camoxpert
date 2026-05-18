@@ -198,7 +198,7 @@ Run final evaluations multiple times and report aggregate statistics.
 - **`ModuleNotFoundError: torch`**  
   Install PyTorch first, then reinstall requirements.
 - **`prettytable` import error in test scripts**  
-  `pip install prettytable`
+  Re-run `pip install -r requirements.txt` in the active environment.
 - **OOM during V12 training**  
   Lower batch size, reduce input shape, keep AMP enabled.
 - **Dataset not found**  
