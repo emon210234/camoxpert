@@ -1,62 +1,79 @@
 # CamoXpert
 
-Modern camouflaged object detection built on ZoomNeXt, with custom CamoXpert variants (including V11 and V12).
-
-This repository includes:
-- training entrypoints for image/video COD
-- evaluation scripts for V11/V12
-- architecture validation utilities
+CamoXpert is a camouflaged object detection project built on ZoomNeXt, with the current production architecture centered on **CamoXpertV12**.
 
 ---
 
-## 1) Environment Setup (Fresh Machine)
+## 1. What this repository contains
 
-### Recommended
-- OS: Linux/WSL (CUDA-capable GPU recommended)
-- Python: 3.10
-- CUDA: compatible with your installed PyTorch build
+- Image COD training entrypoint: `main_for_image.py`
+- Video COD training/evaluation entrypoint: `main_for_video.py`
+- Evaluation scripts for paper metrics:
+  - `test_v11.py`
+  - `test_v12.py`
+- Architecture sanity script: `verify_architecture.py`
+- Model implementations:
+  - `methods/zoomnext/zoomnext.py` (V11 and prior models)
+  - `methods/zoomnext/camoxpert_v12.py` (V12 family)
 
-### Create environment
+---
+
+## 2. Fast restart (from a clean machine)
+
+Assume repository path:
+`/home/runner/work/camoxpert/camoxpert`
+
+### 2.1 Create environment
+
 ```bash
-cd camoxpert
+cd /home/runner/work/camoxpert/camoxpert
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 python -m pip install --upgrade pip
 ```
 
-### Install dependencies
+### 2.2 Install dependencies
+
 ```bash
 pip install torch==2.1.2 torchvision==0.16.2
 pip install -r requirements.txt
+pip install prettytable
 ```
+
+> `prettytable` is required by `test_v11.py` and `test_v12.py`.
 
 ---
 
-## 2) Dataset Preparation
+## 3. Data configuration
 
-You need two styles of data config:
+### 3.1 Image COD training config (used by `main_for_image.py`)
 
-### A) Image COD training (`main_for_image.py`)
-`configs/camoxpert_v11.py` contains `root_path`, `train_image_path`, `train_mask_path`, etc.
-Update these to your local paths before training.
+Edit:
+`/home/runner/work/camoxpert/camoxpert/configs/camoxpert_v11.py`
 
-### B) Video + general eval pipeline (`main_for_video.py`)
-Create `dataset.yaml` in the repository root:
+Set:
+- `train.data.root_path`
+- `train.data.train_image_path`
+- `train.data.train_mask_path`
+- `train.data.test_image_path`
+- `train.data.test_mask_path`
+
+### 3.2 Video/benchmark YAML (used by `main_for_video.py`)
+
+Create:
+`/home/runner/work/camoxpert/camoxpert/dataset.yaml`
+
+Minimal template:
 
 ```yaml
-# VCOD
 moca_mask_tr:
   { root: "YOUR-VCOD-ROOT/MoCA-Mask/MoCA_Video/TrainDataset_per_sq", image: { path: "*/Imgs", suffix: ".jpg" }, mask: { path: "*/GT", suffix: ".png" }, start_idx: 0, end_idx: 0 }
 moca_mask_te:
   { root: "YOUR-VCOD-ROOT/MoCA-Mask/MoCA_Video/TestDataset_per_sq", image: { path: "*/Imgs", suffix: ".jpg" }, mask: { path: "*/GT", suffix: ".png" }, start_idx: 0, end_idx: -2 }
 cad:
   { root: "YOUR-VCOD-ROOT/CamouflagedAnimalDataset", image: { path: "original_data/*/frames", suffix: ".png" }, mask: { path: "converted_mask/*/groundtruth", suffix: ".png" }, start_idx: 0, end_idx: 0 }
-
-# ICOD
 cod10k_tr:
   { root: "YOUR-ICOD-ROOT/Train/COD10K-TR", image: { path: "Image", suffix: ".jpg" }, mask: { path: "Mask", suffix: ".png" } }
-camo_tr:
-  { root: "YOUR-ICOD-ROOT/Train/CAMO-TR", image: { path: "Image", suffix: ".jpg" }, mask: { path: "Mask", suffix: ".png" } }
 cod10k_te:
   { root: "YOUR-ICOD-ROOT/Test/COD10K-TE", image: { path: "Image", suffix: ".jpg" }, mask: { path: "Mask", suffix: ".png" } }
 camo_te:
@@ -69,66 +86,80 @@ nc4k:
 
 ---
 
-## 3) Quick Sanity Checks
+## 4. Sanity check before long runs
 
-### Check architecture (no dataset required)
 ```bash
+cd /home/runner/work/camoxpert/camoxpert
 python verify_architecture.py
 ```
 
-### Verify model imports
-Available CamoXpert classes are exported from:
-`methods/__init__.py`
-
-Core names you can use with `--model-name`:
-- `CamoXpertV11`
-- `CamoXpertV12`
-- `CamoXpertV12_Base`
-- `CamoXpertV12_Progressive`
-- `PvtV2B5_ZoomNeXt`
-- `videoPvtV2B5_ZoomNeXt`
+This validates model construction and forward pass behavior for the V12 stack.
 
 ---
 
-## 4) Training
+## 5. Train models
 
-### A) Image COD (CamoXpert V11 baseline)
+### 5.1 Train V11 baseline (image COD)
 
 ```bash
+cd /home/runner/work/camoxpert/camoxpert
 python main_for_image.py \
   --config configs/camoxpert_v11.py \
   --model-name CamoXpertV11 \
   --save-dir checkpoints_v11
 ```
 
-Resume from a checkpoint:
-```bash
-python main_for_image.py \
-  --config configs/camoxpert_v11.py \
-  --model-name CamoXpertV11 \
-  --load-from checkpoints_v11/zoomnext_epoch_120.pth \
-  --save-dir checkpoints_v11
-```
-
-### B) Image COD (CamoXpert V12)
-
-Use one of:
-- `CamoXpertV12`
-- `CamoXpertV12_Base`
-- `CamoXpertV12_Progressive`
+### 5.2 Train V12 (recommended for paper)
 
 ```bash
+cd /home/runner/work/camoxpert/camoxpert
 python main_for_image.py \
   --config configs/camoxpert_v11.py \
   --model-name CamoXpertV12_Base \
   --save-dir checkpoints_v12
 ```
 
-> Note: V12 models currently reuse `configs/camoxpert_v11.py`. For V12 training, start by reducing `batch_size`, lowering `lr` (e.g., `3e-5`), and keeping `use_amp=True` because V12 usually needs more GPU memory.
+Available V12 names:
+- `CamoXpertV12`
+- `CamoXpertV12_Base`
+- `CamoXpertV12_Progressive`
 
-### C) Video COD (MoCA/CAD finetuning)
+---
+
+## 6. Evaluate and extract paper metrics
+
+Set `CHECKPOINT_PATH` and `DATA_ROOT` in:
+- `/home/runner/work/camoxpert/camoxpert/test_v11.py`
+- `/home/runner/work/camoxpert/camoxpert/test_v12.py`
+
+Then run:
 
 ```bash
+cd /home/runner/work/camoxpert/camoxpert
+python test_v11.py | tee results_v11.txt
+python test_v12.py | tee results_v12.txt
+```
+
+Primary outputs:
+- `S-measure (↑)`
+- `MAE (↓)`
+
+Datasets covered by default:
+- CAMO
+- CHAMELEON
+- COD10K
+- NC4K
+
+For publication tables, keep all raw run logs and report mean/std from repeated runs.
+
+---
+
+## 7. Video COD workflow (optional)
+
+Train/finetune:
+
+```bash
+cd /home/runner/work/camoxpert/camoxpert
 python main_for_video.py \
   --config configs/vcod_finetune.py \
   --data-cfg dataset.yaml \
@@ -136,8 +167,10 @@ python main_for_video.py \
   --pretrained
 ```
 
-Evaluate mode:
+Evaluate:
+
 ```bash
+cd /home/runner/work/camoxpert/camoxpert
 python main_for_video.py \
   --config configs/vcod_finetune.py \
   --data-cfg dataset.yaml \
@@ -148,66 +181,28 @@ python main_for_video.py \
 
 ---
 
-## 5) Evaluation & Metric Extraction (for paper tables)
+## 8. Reproducibility checklist
 
-### V11 evaluation (Sm + MAE on CAMO/CHAMELEON/COD10K/NC4K)
-```bash
-python test_v11.py | tee results_v11.txt
-```
+For every reported result, record:
+- Commit hash
+- Model name
+- Config file path
+- Checkpoint path
+- GPU + CUDA versions
+- Full command used
+- Raw metric output file
 
-### V12 evaluation (Sm + MAE on CAMO/CHAMELEON/COD10K/NC4K)
-```bash
-python test_v12.py | tee results_v12.txt
-```
-
-Both scripts print a final table:
-- `S-measure (↑)`
-- `MAE (↓)`
-
-Use these values directly for IEEE result tables.
+Run final evaluations multiple times and report aggregate statistics.
 
 ---
 
-## 6) Reproducibility Checklist (Publication-Oriented)
+## 9. Troubleshooting
 
-- Fix random seed where possible.
-- Keep dataset versions and directory layout fixed.
-- Record:
-  - git commit hash
-  - config file used
-  - checkpoint path
-  - GPU model / driver / CUDA
-  - exact metric table output (`results_*.txt`)
-- Run each final evaluation at least 3 times and report mean +/- std.
-- Save each run to a separate file (for example: `results_v12_run1.txt`, `results_v12_run2.txt`, `results_v12_run3.txt`) and compute mean/std in your analysis notebook or spreadsheet.
-
----
-
-## 7) Common Issues
-
-### Out-of-memory
-- lower `batch_size` in config
-- reduce input size (`shape`)
-- use fewer workers
-
-### Missing checkpoints in test scripts
-Edit:
-- `CHECKPOINT_PATH`
-- `DATA_ROOT`
-inside `test_v11.py` / `test_v12.py`.
-
-### Dataset not found / empty
-Check exact folder names:
-- `Image` vs `Imgs`
-- `Mask` vs `GT`
-
----
-
-## 8) Useful Files
-
-- `main_for_image.py` — image COD training
-- `main_for_video.py` — video COD training/eval
-- `test_v11.py` — V11 benchmark script
-- `test_v12.py` — V12 benchmark script
-- `verify_architecture.py` — architecture sanity checks
-- `configs/` — experiment configs
+- **`ModuleNotFoundError: torch`**  
+  Install PyTorch first, then reinstall requirements.
+- **`prettytable` import error in test scripts**  
+  `pip install prettytable`
+- **OOM during V12 training**  
+  Lower batch size, reduce input shape, keep AMP enabled.
+- **Dataset not found**  
+  Verify folder names (`Image` vs `Imgs`, `Mask` vs `GT`) and absolute roots.
