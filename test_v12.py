@@ -19,23 +19,23 @@ PROJECT_ROOT = os.getcwd()
 DATA_ROOT = os.path.join(PROJECT_ROOT, "data/COD-TestDataset/COD-TestDataset")
 
 # Model Configuration
-CHECKPOINT_PATH = os.path.join(PROJECT_ROOT, "checkpoints_v12/camoxpert_v12_epoch_120.pth")
+CHECKPOINT_PATH = os.path.join(PROJECT_ROOT, "checkpoints_v12_progressive/zoomnext_epoch_120.pth")
 MODEL_NAME = "CamoXpertV12 (B5 + ASW + BRM + Enhanced Loss)"
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 BASE_SIZE = 448
 
 # Dataset Definitions
 DATASETS = {
-    "CAMO":      {"sub_path": "CAMO",      "img_dir": "Image", "gt_dir": "Mask", "ext": ".jpg"},
-    "CHAMELEON": {"sub_path": "CHAMELEON", "img_dir": "Image", "gt_dir": "Mask", "ext": ".jpg"},
-    "COD10K":    {"sub_path": "COD10K",    "img_dir": "Image", "gt_dir": "Mask", "ext": ".jpg"},
-    "NC4K":      {"sub_path": "NC4K",      "img_dir": "Imgs",  "gt_dir": "GT",   "ext": ".jpg"}
+    "CAMO":      {"sub_path": "CAMO",      "img_dir": "Imgs", "gt_dir": "GT", "ext": ".jpg"},
+    "CHAMELEON": {"sub_path": "CHAMELEON", "img_dir": "Imgs", "gt_dir": "GT", "ext": ".jpg"},
+    "COD10K":    {"sub_path": "COD10K",    "img_dir": "Imgs", "gt_dir": "GT", "ext": ".jpg"},
+    "NC4K":      {"sub_path": "NC4K",      "img_dir": "Imgs", "gt_dir": "GT", "ext": ".jpg"}
 }
 
 # Import Model
 sys.path.append(PROJECT_ROOT)
 try:
-    from methods.zoomnext.camoxpert_v12 import CamoXpertV12_Base
+    from methods.zoomnext.camoxpert_v12 import CamoXpertV12_Progressive
 except ImportError:
     print("⚠️  Could not import CamoXpertV12. Check methods/zoomnext/camoxpert_v12.py")
     sys.exit(1)
@@ -149,7 +149,7 @@ def main():
     
     # Load Model
     try:
-        model = CamoXpertV12_Base(num_frames=1, pretrained=False)
+        model = CamoXpertV12_Progressive(num_frames=1, pretrained=False)
         print("✓ Model created successfully")
     except Exception as e:
         print(f"❌ Error creating model: {e}")
