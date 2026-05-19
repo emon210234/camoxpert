@@ -8,6 +8,7 @@ import torch.nn.functional as F
 import cv2
 import numpy as np
 from torch.utils import data
+from torch.utils.data import ConcatDataset
 from tqdm import tqdm
 from mmengine import Config
 import albumentations as A
@@ -64,6 +65,30 @@ class KaggleCODDataset(data.Dataset):
         augmented = self.transform(image=image, mask=mask)
         return dict(data={"image": augmented['image'], "mask": augmented['mask'].float().unsqueeze(0)}, info={"name": name})
 
+
+def build_train_dataset(data_cfg):
+    if hasattr(data_cfg, "datasets") and data_cfg.datasets:
+        datasets = []
+        for ds in data_cfg.datasets:
+            dataset = KaggleCODDataset(
+                root=ds.root,
+                image_sub=ds.train_image_path,
+                mask_sub=ds.train_mask_path,
+                shape=data_cfg.shape,
+                is_train=True,
+            )
+            datasets.append(dataset)
+        return ConcatDataset(datasets)
+
+    return KaggleCODDataset(
+        root=data_cfg.root_path,
+        image_sub=data_cfg.train_image_path,
+        mask_sub=data_cfg.train_mask_path,
+        shape=data_cfg.shape,
+        is_train=True,
+    )
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=str, required=True)
@@ -90,7 +115,7 @@ def main():
         else:
             print(f"⚠️ Warning: Checkpoint {args.load_from} not found! Starting from scratch.")
     
-    train_set = KaggleCODDataset(root=cfg.train.data.root_path, image_sub=cfg.train.data.train_image_path, mask_sub=cfg.train.data.train_mask_path, shape=cfg.train.data.shape, is_train=True)
+    train_set = build_train_dataset(cfg.train.data)
     train_loader = data.DataLoader(train_set, batch_size=cfg.train.batch_size, shuffle=True, num_workers=cfg.train.num_workers, drop_last=True)
     
     optim = optimizer.construct_optimizer(model, initial_lr=cfg.train.lr, mode=cfg.train.optimizer.mode, group_mode=cfg.train.optimizer.group_mode, cfg=cfg.train.optimizer.cfg)
