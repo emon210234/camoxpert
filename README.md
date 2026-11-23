@@ -131,6 +131,53 @@ python test_v12.py
 
 Both scripts compute **S-measure** and **MAE** for **CAMO**, **CHAMELEON**, **COD10K**, and **NC4K** with MSTTA.
 
+## Results
+
+Quantitative comparison with state-of-the-art COD methods on four benchmarks.
+
+**Metrics:** S<sub>α</sub> = S-measure, F<sup>ω</sup><sub>β</sub> = weighted F-measure, E<sub>φ</sub> = E-measure, M = mean absolute error (MAE). ↑ higher is better, ↓ lower is better.
+The best result in each column is in **bold** and the second best is <ins>underlined</ins>. "–" means the result is not reported.
+
+### COD10K and CAMO
+
+| Method | Year | COD10K<br>S<sub>α</sub> ↑ | COD10K<br>F<sup>ω</sup><sub>β</sub> ↑ | COD10K<br>E<sub>φ</sub> ↑ | COD10K<br>M ↓ | CAMO<br>S<sub>α</sub> ↑ | CAMO<br>F<sup>ω</sup><sub>β</sub> ↑ | CAMO<br>E<sub>φ</sub> ↑ | CAMO<br>M ↓ |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| ANet-SRM | 2019 | – | – | – | – | 0.682 | 0.484 | 0.722 | 0.126 |
+| SINet | 2021 | 0.776 | 0.631 | 0.874 | 0.043 | 0.745 | 0.644 | 0.829 | 0.092 |
+| SLSR | 2021 | 0.804 | 0.673 | 0.892 | 0.037 | 0.787 | 0.696 | 0.854 | 0.080 |
+| MGL-R | 2021 | 0.814 | 0.666 | 0.890 | 0.035 | 0.775 | 0.673 | 0.842 | 0.088 |
+| PFNet | 2021 | 0.800 | 0.660 | 0.890 | 0.040 | 0.782 | 0.695 | 0.855 | 0.085 |
+| UJSC | 2021 | 0.809 | 0.684 | 0.891 | 0.035 | 0.800 | 0.728 | 0.873 | 0.073 |
+| MirrorNet | 2021 | – | – | – | – | 0.785 | 0.719 | 0.850 | 0.077 |
+| C²F-Net | 2021 | 0.813 | 0.686 | 0.900 | 0.036 | 0.796 | 0.719 | 0.864 | 0.080 |
+| UGTR | 2021 | 0.817 | 0.666 | 0.890 | 0.036 | 0.784 | 0.684 | 0.851 | 0.086 |
+| ZoomNet | 2022 | 0.838 | 0.729 | 0.911 | 0.029 | 0.820 | 0.753 | 0.892 | 0.066 |
+| HitNet | 2023 | 0.868 | <ins>0.784</ins> | <ins>0.925</ins> | <ins>0.024</ins> | 0.844 | 0.801 | **0.920** | 0.056 |
+| ZoomNeXt | 2024 | **0.878** | **0.845** | **0.938** | **0.023** | 0.842 | <ins>0.810</ins> | 0.915 | 0.060 |
+| CamoXpert v11 | – | 0.862 | 0.692 | 0.836 | 0.033 | 0.876 | 0.775 | 0.906 | 0.057 |
+| **CamoXpert v12** | – | 0.874 | 0.753 | 0.891 | 0.028 | **0.882** | **0.812** | <ins>0.918</ins> | **0.050** |
+| v12-Progressive | – | <ins>0.875</ins> | 0.755 | 0.894 | 0.028 | <ins>0.879</ins> | 0.808 | 0.916 | <ins>0.051</ins> |
+
+### CHAMELEON and NC4K
+
+| Method | Year | CHAMELEON<br>S<sub>α</sub> ↑ | CHAMELEON<br>F<sup>ω</sup><sub>β</sub> ↑ | CHAMELEON<br>E<sub>φ</sub> ↑ | CHAMELEON<br>M ↓ | NC4K<br>S<sub>α</sub> ↑ | NC4K<br>F<sup>ω</sup><sub>β</sub> ↑ | NC4K<br>E<sub>φ</sub> ↑ | NC4K<br>M ↓ |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| ANet-SRM | 2019 | – | – | – | – | – | – | – | – |
+| SINet | 2021 | 0.872 | 0.806 | 0.946 | 0.034 | 0.808 | 0.723 | 0.883 | 0.058 |
+| SLSR | 2021 | 0.890 | 0.822 | 0.948 | 0.030 | 0.840 | 0.766 | 0.907 | 0.048 |
+| MGL-R | 2021 | 0.893 | 0.812 | 0.941 | 0.031 | 0.833 | 0.739 | 0.893 | 0.053 |
+| PFNet | 2021 | 0.882 | 0.810 | 0.945 | 0.033 | 0.829 | 0.745 | 0.898 | 0.053 |
+| UJSC | 2021 | 0.891 | 0.833 | <ins>0.955</ins> | 0.030 | 0.842 | 0.771 | 0.907 | 0.047 |
+| MirrorNet | 2021 | – | – | – | – | – | – | – | – |
+| C²F-Net | 2021 | 0.888 | 0.828 | 0.946 | 0.032 | 0.838 | 0.762 | 0.904 | 0.049 |
+| UGTR | 2021 | 0.888 | 0.794 | 0.940 | 0.031 | 0.839 | 0.746 | 0.899 | 0.052 |
+| ZoomNet | 2022 | 0.902 | <ins>0.845</ins> | **0.958** | **0.023** | 0.853 | 0.784 | 0.912 | 0.043 |
+| HitNet | 2023 | 0.899 | 0.835 | 0.950 | 0.028 | 0.875 | <ins>0.818</ins> | <ins>0.927</ins> | **0.036** |
+| ZoomNeXt | 2024 | <ins>0.909</ins> | **0.871** | **0.958** | <ins>0.024</ins> | **0.879** | **0.842** | **0.931** | <ins>0.038</ins> |
+| CamoXpert v11 | – | 0.901 | 0.779 | 0.902 | 0.035 | 0.869 | 0.752 | 0.886 | 0.049 |
+| **CamoXpert v12** | – | **0.912** | 0.840 | 0.947 | 0.026 | <ins>0.878</ins> | 0.794 | 0.908 | 0.042 |
+| v12-Progressive | – | **0.912** | 0.837 | 0.939 | 0.026 | 0.874 | 0.789 | 0.911 | 0.043 |
+
 ## Architecture Verification
 
 ```bash
