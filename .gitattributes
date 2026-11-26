@@ -1,0 +1,7 @@
+# Store text files with LF in git, whatever the OS. Stops Windows CRLF conversions from showing
+# every file as "modified" (that is what happened to the pre-P2 checkout).
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.pdf binary
+*.pth binary

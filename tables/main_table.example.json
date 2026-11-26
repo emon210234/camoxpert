@@ -1,0 +1,15 @@
+{
+  "caption_note": "single-pass, PySODMetrics; E_phi = mean E-measure",
+  "mode": "single",
+  "datasets": ["CAMO", "CHAMELEON", "COD10K", "NC4K"],
+  "metrics": ["Sm", "meanEm", "wFm", "MAE"],
+  "digits": 3,
+  "show_std": false,
+  "rows": [
+    {"label": "ZoomNeXt-B5 (reported)", "external": "external_results.json", "key": "ZoomNeXt-B5"},
+    {"label": "ZoomNeXt-B5 (our pipeline)", "runs": ["C:/runs/R0_zoomnext_b5_s0"]},
+    {"label": "CamoXpert-Base", "runs": ["C:/runs/R1_camoxpert_base_s0"]},
+    {"label": "CamoXpert", "runs": ["C:/runs/R5_camoxpert_s0", "C:/runs/R5_camoxpert_s1", "C:/runs/R5_camoxpert_s2"]},
+    {"label": "CamoXpert-PR", "runs": ["C:/runs/R6_camoxpert_pr_s0"]}
+  ]
+}

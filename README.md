@@ -1,162 +1,92 @@
-# CamoXpert: Camouflaged Object Detection (Image + Video)
+# CamoXpert
 
-CamoXpert is a research codebase for camouflaged object detection (COD). It includes the **CamoXpertV11** baseline and **CamoXpertV12** improvements (adaptive scale weighting, boundary refinement, enhanced loss, optional progressive refinement). The project supports:
+Code for the manuscript on CamoXpert, a camouflaged object detection (COD) network with a
+PVTv2-B5 encoder, a three-scale input pyramid, and a decoder that fuses the scales with
+directional GRU scans and a two-expert mixture, plus optional adaptive scale weighting (ASW),
+a boundary refinement module (BRM) and progressive refinement (PR).
 
-- **Image COD (ICOD)** training and evaluation
-- **Video COD (VCOD)** finetuning and evaluation
-- Multi-scale test-time augmentation (MSTTA) benchmarks
+**Built on ZoomNeXt.** This code base started from ZoomNeXt (Pang et al., TPAMI 2024,
+https://github.com/lartpang/ZoomNeXt). The PVTv2 backbone file, the basic ops and the ZoomNeXt
+baseline network are copied from it (see `THIRD_PARTY_NOTICES.md`). Please cite ZoomNeXt and
+PVTv2 if you use this code.
 
-> This repository reflects the post–Jan 13, 2026 codebase updates.
+## Models
 
-## Key Models
+| Name in the paper | Config | What it is |
+|---|---|---|
+| CamoXpert-Base | `configs/r1_camoxpert_base.py` | PVTv2-B5 + scan/MoE fusion decoder, BCE + MoE balance loss |
+| CamoXpert | `configs/r5_camoxpert.py` | Base + ASW + BRM, BCE + IoU + SSIM + edge loss |
+| CamoXpert-PR | `configs/r6_camoxpert_pr.py` | CamoXpert + 2-step progressive refinement |
+| ZoomNeXt-B5 (our pipeline) | `configs/r0_zoomnext_b5.py` | upstream ZoomNeXt network and loss, trained with our protocol |
+| ablations | `configs/r2_*.py`, `r3_*.py`, `r4_*.py`, `r1a_*.py`, `r1b_*.py` | one component at a time |
 
-- **CamoXpertV11**: PVTv2-B5 + Mamba + MoE (baseline)
-- **CamoXpertV12_Base**: V11 + Adaptive Scale Weighting + Boundary Refinement + Enhanced Loss
-- **CamoXpertV12_Progressive**: V12_Base + Progressive Refinement (slower, higher accuracy)
+All runs share the protocol in `configs/_base.py`; only the model and loss differ.
 
-## Environment Setup
+## Install (Windows or Linux, NVIDIA GPU)
 
-**Recommended:** Python 3.9–3.11 with a CUDA-capable GPU.
+Requires [uv](https://docs.astral.sh/uv/). From the repository folder:
 
-```bash
-# 1) Create and activate a virtual environment
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
-
-# 2) Install PyTorch (choose your CUDA build)
-# Use the PyTorch selector to match your CUDA version (wheel tags like cu118/cu121):
-# https://pytorch.org/get-started/locally/
-# Example (tested CUDA 11.8 build):
-# pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu118
-# Example (CPU-only, tested):
-# pip install torch==2.1.2 torchvision==0.16.2
-#
-# Note: the versions above are tested with this repo; use pytorch.org for newer stable releases if desired.
-
-# 3) Install remaining dependencies
-pip install -r requirements.txt
+```powershell
+uv sync                     # Python 3.11 + PyTorch 2.7.1 (CUDA 12.6) + pinned dependencies -> .venv, writes uv.lock
+uv run python -c "import torch; print(torch.__version__, torch.cuda.is_available(), torch.cuda.get_device_name(0))"
+uv run pytest -q            # 29 CPU tests, about a minute
 ```
 
-## Data Setup
+The ImageNet weights of PVTv2-B5 are downloaded on first use from the official PVT release
+into the torch hub cache. Offline machines: download `pvt_v2_b5.pth` from
+https://github.com/whai362/PVT/releases/tag/v2 and add `--set train.pretrained_path=C:/path/pvt_v2_b5.pth`.
 
-### Image COD (ICOD)
-Training with `main_for_image.py` uses paths defined in your config file.
-Update these fields in **configs/camoxpert_v11.py** (or your custom config):
+## Data
 
-```python
-train = dict(
-    data=dict(
-        root_path="/path/to/COD10K-v3",
-        train_image_path="Train/Image",
-        train_mask_path="Train/GT_Object",
-        test_image_path="Test/Image",
-        test_mask_path="Test/GT_Object",
-    )
-)
-```
-The training script does not auto-detect folder conventions—make sure these paths match your dataset layout.
-If you are using COD10K-v3, masks are typically under `Train/GT_Object`; older releases may use `Train/Mask`.
-
-### Video COD (VCOD)
-`main_for_video.py` expects a dataset YAML. Create `dataset.yaml` in the repo root (or pass `--data-cfg`).
-
-Minimal template:
-```yaml
-# VCOD
-moca_mask_tr:
-  { root: "/path/to/MoCA-Mask/MoCA_Video/TrainDataset_per_sq", image: { path: "*/Imgs", suffix: ".jpg" }, mask: { path: "*/GT", suffix: ".png" }, start_idx: 0, end_idx: 0 }
-moca_mask_te:
-  { root: "/path/to/MoCA-Mask/MoCA_Video/TestDataset_per_sq",  image: { path: "*/Imgs", suffix: ".jpg" }, mask: { path: "*/GT", suffix: ".png" }, start_idx: 0, end_idx: -2 }
-cad:
-  { root: "/path/to/CamouflagedAnimalDataset", image: { path: "original_data/*/frames", suffix: ".png" }, mask: { path: "converted_mask/*/groundtruth", suffix: ".png" }, start_idx: 0, end_idx: 0 }
-
-# ICOD
-cod10k_tr:
-  { root: "/path/to/COD10K-v3/Train/COD10K-TR", image: { path: "Image", suffix: ".jpg" }, mask: { path: "Mask", suffix: ".png" } }
-camo_tr:
-  { root: "/path/to/CAMO/Train/CAMO-TR", image: { path: "Image", suffix: ".jpg" }, mask: { path: "Mask", suffix: ".png" } }
-cod10k_te:
-  { root: "/path/to/COD10K-v3/Test/COD10K-TE", image: { path: "Image", suffix: ".jpg" }, mask: { path: "Mask", suffix: ".png" } }
-camo_te:
-  { root: "/path/to/CAMO/Test/CAMO-TE", image: { path: "Image", suffix: ".jpg" }, mask: { path: "Mask", suffix: ".png" } }
-chameleon:
-  { root: "/path/to/CHAMELEON", image: { path: "Image", suffix: ".jpg" }, mask: { path: "Mask", suffix: ".png" } }
-nc4k:
-  { root: "/path/to/NC4K", image: { path: "Imgs", suffix: ".jpg" }, mask: { path: "GT", suffix: ".png" } }
-```
-
-## Training
-
-### Image COD (ICOD)
-```bash
-# V11 baseline
-python main_for_image.py --config configs/camoxpert_v11.py --model-name CamoXpertV11 --save-dir checkpoints_v11
-
-# V12 base (reuse V11 config or create a separate one)
-python main_for_image.py --config configs/camoxpert_v11.py --model-name CamoXpertV12_Base --save-dir checkpoints_v12
-# Optional: copy for experiment tracking
-cp configs/camoxpert_v11.py configs/camoxpert_v12.py
-# Update root_path/train_* paths and (optionally) batch size for memory
-python main_for_image.py --config configs/camoxpert_v12.py --model-name CamoXpertV12_Base --save-dir checkpoints_v12
-
-# V12 progressive refinement
-python main_for_image.py --config configs/camoxpert_v12.py --model-name CamoXpertV12_Progressive --save-dir checkpoints_v12
-```
-V12 uses the same config schema as V11; set dataset paths in whichever config you use and only change hyperparameters if needed.
-
-### Video COD (VCOD)
-```bash
-# Pretrain (ICOD backbone init)
-python main_for_image.py --config configs/icod_pretrain.py --model-name PvtV2B5_ZoomNeXt --pretrained --save-dir checkpoints_icod
-
-# Finetune (VCOD) from ICOD checkpoint
-python main_for_video.py --config configs/vcod_finetune.py --data-cfg dataset.yaml --model-name videoPvtV2B5_ZoomNeXt --load-from checkpoints_icod/<PRETRAIN_CKPT>.pth
-```
-
-> If you hit OOM, reduce batch size in the config or add `--use-checkpoint` to enable gradient checkpointing.
-
-## Evaluation (Paper Metrics)
-
-### V11 (baseline)
-```bash
-# Update CHECKPOINT_PATH and DATA_ROOT in test_v11.py before running
-python test_v11.py
-```
-
-### V12 (improved)
-```bash
-# Update CHECKPOINT_PATH and DATA_ROOT in test_v12.py before running
-python test_v12.py
-```
-
-Both scripts compute **S-measure** and **MAE** for **CAMO**, **CHAMELEON**, **COD10K**, and **NC4K** with MSTTA.
-
-## Architecture Verification
-
-```bash
-python verify_architecture.py
-```
-
-## Project Layout (Key Files)
+Standard COD split (the SINet-V2 release):
 
 ```
-configs/               # Training configs
-methods/zoomnext/      # Model implementations (V11/V12)
-main_for_image.py      # ICOD training script
-main_for_video.py      # VCOD training/eval script (uses dataset.yaml)
-test_v11.py            # V11 benchmarking script
-test_v12.py            # V12 benchmarking script
-verify_architecture.py # Sanity check for V12 model
+C:/data/COD/TrainDataset/{Imgs,GT}                 4,040 (3,040 COD10K + 1,000 CAMO)
+C:/data/COD/TestDataset/CAMO/{Imgs,GT}               250
+C:/data/COD/TestDataset/CHAMELEON/{Imgs,GT}           76
+C:/data/COD/TestDataset/COD10K/{Imgs,GT}           2,026
+C:/data/COD/TestDataset/NC4K/{Imgs,GT}             4,121
 ```
 
-## Notes
+```powershell
+uv run python tools/check_data.py --root C:/data/COD --out C:/runs/data_manifest.json --full
+```
 
-- `test_v11.py` hardcodes `DEVICE = 'cuda'`. Switch to `'cpu'` in the script if needed (no CLI flag).
-- `test_v12.py` auto-selects CUDA if available; edit `DEVICE` to force CPU.
-- Verify dataset folder names (`Image/Mask` vs `Imgs/GT`) and update configs accordingly.
-- For reproducibility, keep a record of checkpoint paths and data versions used in your paper.
-- `--pretrained` loads backbone weights; use `--load-from` to resume a full CamoXpert checkpoint.
+## Train, evaluate, profile
 
-## License
+```powershell
+# one run (seed 0); writes config.json, run_meta.json, train_log.jsonl, last.pth, model_final.pth
+uv run python tools/train.py --config configs/r5_camoxpert.py --out C:/runs/R5_camoxpert_s0
+# after a crash or reboot
+uv run python tools/train.py --config configs/r5_camoxpert.py --out C:/runs/R5_camoxpert_s0 --resume
+# other seeds
+uv run python tools/train.py --config configs/r5_camoxpert.py --out C:/runs/R5_camoxpert_s1 --set seed=1
 
-No explicit license is provided. Treat the code as proprietary until you obtain written permission from the repository owner.
+# evaluation of the final checkpoint (single pass), with prediction maps
+uv run python tools/eval.py --run C:/runs/R5_camoxpert_s0 --save-maps
+# multi-scale + flip TTA, reported separately
+uv run python tools/eval.py --run C:/runs/R5_camoxpert_s0 --tta
+
+# parameters, FLOPs, speed
+uv run python tools/profile_model.py --config configs/r5_camoxpert.py --out C:/runs/profile
+
+# LaTeX tables from the JSON results (see the docstring for the spec format)
+# (copy tables/*.example.json first and fill in the run folders / published numbers)
+uv run python tools/make_tables.py --spec tables/main_table.json --out tables/main.tex
+```
+
+Protocol rules the scripts enforce: the standard 4,040-image training set, a fixed number of
+epochs, evaluation of the last checkpoint only (no test data is used during training), and one
+evaluation code path for every model.
+
+## Verification
+
+```powershell
+uv run python tests/e2e_smoke.py                                    # fake data, whole pipeline, ~5 min on CPU
+uv run python tools/verify/against_legacy.py --legacy-root ../_archive/camoxpert_pre_P2
+uv run python tools/verify/zoomnext_port.py --upstream-root ../ZoomNeXt_upstream   # git clone of lartpang/ZoomNeXt
+```
+
+The last two show that the CamoXpert classes reproduce the pre-refactor classes and that the
+ZoomNeXt port reproduces upstream ZoomNeXt exactly (same outputs and losses for the same weights).
+`CHANGES.md` lists every change from the pre-refactor code and why it was made.

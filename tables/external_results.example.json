@@ -1,0 +1,14 @@
+{
+  "_how_to_use": "Copy to external_results.json. One entry per published method. Type each number exactly as printed in the cited source, and say where it is printed. Only enter metrics whose definition matches ours (e.g. mean E-measure vs adaptive E-measure: check the source).",
+  "ZoomNeXt-B5": {
+    "cite": "pang2024zoomnext",
+    "where": "e.g. Table N of the TPAMI paper, or the GitHub README PVTv2-B5 row",
+    "metric_notes": "",
+    "results": {
+      "CAMO": {},
+      "CHAMELEON": {},
+      "COD10K": {},
+      "NC4K": {}
+    }
+  }
+}

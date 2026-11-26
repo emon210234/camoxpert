@@ -1,72 +1,45 @@
-# https://github.com/LongTengDao/TOML/
+[project]
+name = "camoxpert"
+version = "1.0.0"
+description = "CamoXpert: camouflaged object detection with a PVTv2-B5 encoder (code for the JVCI manuscript)"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "torch==2.7.1",
+    "torchvision==0.22.1",          # needed by timm
+    "timm==0.9.12",                 # PVTv2 building blocks (DropPath, trunc_normal_)
+    "einops==0.7.0",                # ZoomNeXt's MHSIU
+    "albumentations==1.3.1",        # same version as the legacy pipeline
+    "opencv-python-headless==4.8.1.78",
+    "numpy==1.26.4",                # albumentations 1.3.1 / OpenCV 4.8 predate NumPy 2
+    "pysodmetrics==1.4.2",          # S-measure, weighted F, E-measure, MAE
+    "tqdm>=4.66",
+]
 
-[tool.isort]
-# https://pycqa.github.io/isort/docs/configuration/options/
-profile = "black"
-multi_line_output = 3
-filter_files = true
-supported_extensions = "py"
+[dependency-groups]
+dev = ["pytest>=8"]
 
-[tool.black]
-line-length = 119
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.idea
-  | \.vscode
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-  | output
-)/
-'''
+# CUDA 12.6 builds of PyTorch for Windows and Linux (RTX 4090 = compute capability 8.9).
+# PyPI's Windows torch wheels are CPU-only, hence the extra index.
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu126", marker = "sys_platform == 'win32' or sys_platform == 'linux'" }]
+torchvision = [{ index = "pytorch-cu126", marker = "sys_platform == 'win32' or sys_platform == 'linux'" }]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/camoxpert"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning", "ignore::UserWarning"]
 
 [tool.ruff]
-# Same as Black.
 line-length = 119
-indent-width = 4
-# Exclude a variety of commonly ignored directories.
-exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".git-rewrite",
-    ".hg",
-    ".ipynb_checkpoints",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pyenv",
-    ".pytest_cache",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    ".vscode",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "site-packages",
-    "venv",
-]
-[tool.ruff.format]
-# Like Black, use double quotes for strings.
-quote-style = "double"
-# Like Black, indent with spaces, rather than tabs.
-indent-style = "space"
-# Like Black, respect magic trailing commas.
-skip-magic-trailing-comma = false
-# Like Black, automatically detect the appropriate line ending.
-line-ending = "auto"
