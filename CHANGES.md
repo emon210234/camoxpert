@@ -175,12 +175,13 @@ anything other than the model, the loss, or R0's input size.
    results only at noise level, but neither is measured yet for this model. The P3 timing run
    measures both (`--set train.amp=none` for float32); then one setting is fixed in `_base.py`
    before the first paper run and kept for all runs.
-2. **ZoomNeXt (R0) input size.** R0 uses ZoomNeXt's own pyramid (576/384/192). Alternative:
-   `--set data.size=448` to give it exactly CamoXpert's input. The paper reports which one.
+2. **ZoomNeXt (R0) input size — decided 2026-11-27: same pyramid as CamoXpert (448/336/224).**
+   Then data, recipe and input are identical and only the decoder and loss differ, so R0
+   isolates the decoder. ZoomNeXt's native 576/384/192 setting is covered by citing its published
+   numbers; it can be run as an extra (command in the r0 config docstring).
 3. **Cosine floor** 1 % (`sched.min_factor=0.01`), as the legacy config intended.
-4. **Optional ablations** R1a (no GRU scans) and R1b (single expert, no router) test the fusion
-   block itself; they cost two more runs. Without them a reviewer may ask whether the scan or the
-   MoE does anything.
+4. **Ablations R1a (no GRU scans) and R1b (single expert, no router) — decided 2026-11-27: run
+   both.** They test whether the scan and the mixture of experts contribute anything.
 5. **GT for metrics**: raw GT into PySODMetrics (binarised at 128 inside). ZoomNeXt's own
    evaluator first set every GT pixel > 0 to 255; the two differ only on GT pixels with gray
    values 1–128 (`tools/check_data.py` counts masks that have such values).
