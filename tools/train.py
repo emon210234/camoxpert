@@ -51,8 +51,12 @@ def setup_logging(out_dir):
 
 
 def autocast_ctx(mode, device):
-    if mode == "none" or device.type != "cuda":
+    # --set train.amp=none arrives as Python None (config._parse_value turns "none" into None),
+    # while a config file may hold the string "none"; both mean plain float32.
+    if mode in (None, "none") or device.type != "cuda":
         return nullcontext()
+    if mode not in ("bf16", "fp16"):
+        raise ValueError(f"train.amp must be 'bf16', 'fp16' or 'none', got {mode!r}")
     dtype = {"bf16": torch.bfloat16, "fp16": torch.float16}[mode]
     return torch.autocast(device_type="cuda", dtype=dtype)
 

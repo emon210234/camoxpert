@@ -233,3 +233,9 @@ Decision: `train.cudnn_benchmark=False` in configs/_base.py for every run. This 
 setting and does not change the maths of training: cuDNN only chooses its conv algorithm by a
 fixed rule instead of timing them. pin_memory stays on (it worked).
 
+Bug found by the fp32 timing run (2026-11-27): `--set train.amp=none` crashed with `KeyError: None`.
+The override parser turns the text "none" into Python `None`, but `autocast_ctx` in tools/train.py
+only tested for the string "none". The CPU smoke test never reached that line (on CPU autocast is
+skipped first), so the tests did not catch it. Fix: `autocast_ctx` accepts both `None` and "none",
+and rejects any other unknown value with a clear message. No effect on bf16 runs.
+
