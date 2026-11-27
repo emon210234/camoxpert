@@ -219,3 +219,17 @@ GPU-side settings: float32 (no autocast), cuDNN benchmark off, no pinned memory.
   behaviour), so each setting can be switched off without a code edit.
 - New `tools/diag_gpu.py`: tests each setting in a separate process and reports which crashes.
 The fix chosen from its output is recorded here before any paper run.
+
+Result (2026-11-27, lab VM, driver 610.88, torch 2.7.1+cu126):
+- `diag_gpu.py`: all 11 cases passed, including 3 bf16 and 3 fp32 training steps with
+  cudnn.benchmark on (random weights and random data, no DataLoader).
+- Real R5 timing run (bf16, benchmark ON, pin_memory ON): crashed again in the first forward pass,
+  same error, same PVTv2 dwconv. That makes 2 crashes out of 2 real runs with benchmark on.
+- Same run with `--set train.cudnn_benchmark=False` (bf16, pin_memory ON): 300 iterations
+  without error, 0.562 s/it, peak 11.6 GB (C:/runs/timing_R5_bf16_nobench/timing.json).
+- The Windows System log has no nvlddmkm or Display events for the day, so a TDR driver reset
+  is NOT confirmed. Why benchmark mode crashes only in real training is still unknown.
+Decision: `train.cudnn_benchmark=False` in configs/_base.py for every run. This is the legacy
+setting and does not change the maths of training: cuDNN only chooses its conv algorithm by a
+fixed rule instead of timing them. pin_memory stays on (it worked).
+
