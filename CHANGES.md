@@ -209,3 +209,13 @@ anything other than the model, the loss, or R0's input size.
 4. `engine.py` — `lr_factor` and the optimizer groups.
 5. `tools/train.py` — the loop: set lr → forward (autocast) → loss (fp32) → backward → step.
 6. `metrics.py`, `tools/eval.py` — how a number in the paper is produced.
+
+## 8. P3 addendum (2026-11-27): first timing run crashed on the lab VM
+
+`tools/train.py` died on the first forward pass with `RuntimeError: CUDA error: unknown error`
+(inside a PVTv2 depthwise conv). The legacy code did train on this VM, and differs in three
+GPU-side settings: float32 (no autocast), cuDNN benchmark off, no pinned memory.
+- New config keys `train.cudnn_benchmark` and `train.pin_memory` (defaults True = unchanged
+  behaviour), so each setting can be switched off without a code edit.
+- New `tools/diag_gpu.py`: tests each setting in a separate process and reports which crashes.
+The fix chosen from its output is recorded here before any paper run.

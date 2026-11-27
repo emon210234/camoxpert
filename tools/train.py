@@ -89,7 +89,7 @@ def main():
         E.write_json(cfg, cfg_path)
 
     E.seed_everything(cfg["seed"])
-    torch.backends.cudnn.benchmark = True
+    torch.backends.cudnn.benchmark = cfg["train"]["cudnn_benchmark"]
 
     # ---------------------------------------------------------------- data
     pairs = D.train_pairs(cfg["data"]["root"])
@@ -104,7 +104,7 @@ def main():
         shuffle=True,
         drop_last=True,
         num_workers=tcfg["num_workers"],
-        pin_memory=device.type == "cuda",
+        pin_memory=device.type == "cuda" and tcfg["pin_memory"],
         persistent_workers=tcfg["num_workers"] > 0,
         worker_init_fn=E.worker_init_fn,
         generator=gen,

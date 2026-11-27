@@ -38,6 +38,8 @@ def base_config():
             num_workers=2,  # the VM has 8 GB RAM; each Windows worker is a full Python process
             amp="bf16",  # "bf16", "fp16" or "none". Legacy flag use_amp=True never enabled autocast
             grad_clip=None,  # max grad-norm, None = off (legacy: off)
+            cudnn_benchmark=True,  # let cuDNN time conv algorithms on the first step (legacy: off)
+            pin_memory=True,  # page-locked host buffers for faster CPU->GPU copies (legacy: off)
             log_every=20,
             pretrained=True,  # ImageNet PVTv2-B5 weights (False only for software tests)
             pretrained_path=None,  # local pvt_v2_b5.pth, else downloaded from the PVT GitHub release
