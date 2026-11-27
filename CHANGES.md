@@ -239,3 +239,14 @@ only tested for the string "none". The CPU smoke test never reached that line (o
 skipped first), so the tests did not catch it. Fix: `autocast_ctx` accepts both `None` and "none",
 and rejects any other unknown value with a clear message. No effect on bf16 runs.
 
+Training protocol frozen (2026-11-27), from the P3 timing runs (300 iterations, first 50 not timed,
+batch 8, benchmark off; files C:/runs/timing_*/timing.json on the VM):
+- Precision: `train.amp="none"` (float32). R5: fp32 0.507 s/it vs bf16 0.562 s/it in training;
+  batch-1 forward 131.8 ms fp32 vs 165.0 ms bf16 (tools/profile_model.py). Peak 18.1 GB fits 24 GB.
+  The code sets no TF32 flag, so PyTorch defaults apply: cuDNN convolutions may use TF32,
+  matmuls use full float32. The paper must state precision this way.
+- Epochs: 120 (legacy), the same for every run, last checkpoint, chosen before any test result.
+- num_workers: 2. With 4 workers, free RAM on the 8 GB VM fell from 4.88 GB to 0.70 GB at the
+  first iteration; the run was stopped by hand (C:/runs/timing_R5_fp32_w4, not used).
+- With 2 workers GPU-Util averaged 69% (R5 fp32), so data loading partly limits speed. Accepted.
+

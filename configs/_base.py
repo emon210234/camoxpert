@@ -33,10 +33,10 @@ def base_config():
         ),
         loss=dict(bce=1.0, iou=0.5, ssim=0.3, edge=0.2, ual=0.0, aux=0.1),
         train=dict(
-            epochs=120,  # (legacy) PROVISIONAL: fixed after the P3 timing run, then same for all runs
+            epochs=120,  # (legacy) FIXED 2026-11-27 after the P3 timing runs; same for all runs
             batch_size=8,  # (legacy)
-            num_workers=2,  # the VM has 8 GB RAM; each Windows worker is a full Python process
-            amp="bf16",  # "bf16", "fp16" or "none". Legacy flag use_amp=True never enabled autocast
+            num_workers=2,  # FIXED: 4 workers left 0.70 GB free RAM on the 8 GB VM (CHANGES.md 8)
+            amp="none",  # FIXED: float32 (PyTorch default TF32 for cuDNN convs); faster than bf16 here
             grad_clip=None,  # max grad-norm, None = off (legacy: off)
             cudnn_benchmark=False,  # (legacy) True crashes real training on the lab VM, see CHANGES.md 8
             pin_memory=True,  # page-locked host buffers for faster CPU->GPU copies (legacy: off)
