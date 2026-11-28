@@ -112,3 +112,59 @@ class ZoomNeXtB5(_UpstreamPvtV2ZoomNeXt):
         logits = self.body(dict(image_l=img_l, image_m=img_m, image_s=img_s))
         return dict(logits=logits, side_logits=[], edge_logits=None, aux_loss=logits.new_zeros(()))
 
+
+
+class ZoomNeXtB5Plus(ZoomNeXtB5):
+    """R8: ZoomNeXt-B5 + CamoXpert's AdaptiveScaleWeighting (ASW) and BoundaryRefinementModule (BRM).
+
+    Everything of ZoomNeXtB5 is kept (encoder, tra_*, MHSIU siu_*, RGPU hmu_*, tra_1, predictor).
+    Two optional insertions, the same modules (same classes) CamoXpert uses:
+      * asw=True : before EVERY multi-scale fusion (siu_5, siu_4, siu_3, siu_2), the three scale
+                   features l, m, s are re-weighted per image: (l, m, s) <- (w_l l, w_m m, w_s s),
+                   w = softmax(MLP(GAP)). (CamoXpert fuses at 3 stages, ZoomNeXt at 4, so ASW is at 4.)
+      * brm=True : after hmu_2, before tra_1 and the predictor (64 channels; the same place in
+                   the decoder as in CamoXpert), x <- BRM(x); BRM also returns edge logits that
+                   the edge loss supervises. ZoomNeXt merges scales at the MEDIUM scale's
+                   resolution, so here BRM runs at stride 4 of the medium input (84 x 84 for
+                   S = 448), where CamoXpert's BRM runs at 112 x 112. The final logits are at
+                   0.75 S (336 x 336), exactly as in R0; loss and evaluation resize them.
+    With asw=False and brm=False no extra module is created, so the network (and its random
+    initialisation for a given seed) is exactly ZoomNeXtB5 (checked in tests/test_units.py).
+    """
+
+    def __init__(self, asw=True, brm=True, **kwargs):
+        super().__init__(**kwargs)
+        self.use_asw = asw
+        self.use_brm = brm
+        if asw:
+            from .camoxpert_layers import AdaptiveScaleWeighting
+
+            for k in (5, 4, 3, 2):
+                setattr(self, f"asw_{k}", AdaptiveScaleWeighting(64))
+        if brm:
+            from .camoxpert_layers import BoundaryRefinementModule
+
+            self.boundary_refine = BoundaryRefinementModule(64)
+
+    def _fuse(self, k, feats_l, feats_m, feats_s, prev):
+        tra = getattr(self, f"tra_{k}")
+        i = k - 2
+        l, m, s = tra(feats_l[i]), tra(feats_m[i]), tra(feats_s[i])
+        if self.use_asw:
+            l, m, s = getattr(self, f"asw_{k}")(l, m, s)
+        lms = getattr(self, f"siu_{k}")(l=l, m=m, s=s)
+        if prev is not None:
+            lms = lms + resize_to(prev, tgt_hw=lms.shape[-2:])
+        return getattr(self, f"hmu_{k}")(lms)
+
+    def forward(self, image):
+        img_l, img_m, img_s = make_pyramid(image, self.scales)
+        f_l, f_m, f_s = self.normalize_encoder(img_l), self.normalize_encoder(img_m), self.normalize_encoder(img_s)
+        x = None
+        for k in (5, 4, 3, 2):
+            x = self._fuse(k, f_l, f_m, f_s, x)
+        edge_logits = None
+        if self.use_brm:
+            x, edge_logits = self.boundary_refine(x)
+        logits = self.predictor(self.tra_1(x))
+        return dict(logits=logits, side_logits=[], edge_logits=edge_logits, aux_loss=logits.new_zeros(()))

@@ -141,3 +141,26 @@ def test_metrics_perfect_prediction():
     assert r["MAE"] == pytest.approx(0.0, abs=1e-9)
     assert r["Sm"] == pytest.approx(1.0, abs=1e-6)
     assert r["wFm"] == pytest.approx(1.0, abs=1e-4)
+
+
+def test_zoomnext_plus_without_modules_equals_zoomnext():
+    """R8's class with asw=False, brm=False must be ZoomNeXt-B5 exactly (same init, same output)."""
+    from camoxpert.models.zoomnext import ZoomNeXtB5, ZoomNeXtB5Plus
+
+    x = torch.rand(1, 3, 96, 96)
+    torch.manual_seed(0)
+    a = ZoomNeXtB5(pretrained=False, scales=(1.0, 0.75, 0.5)).eval()
+    torch.manual_seed(0)
+    b = ZoomNeXtB5Plus(pretrained=False, scales=(1.0, 0.75, 0.5), asw=False, brm=False).eval()
+    with torch.no_grad():
+        assert torch.equal(a(x)["logits"], b(x)["logits"])
+
+
+def test_zoomnext_plus_shapes():
+    from camoxpert.models.zoomnext import ZoomNeXtB5Plus
+
+    m = ZoomNeXtB5Plus(pretrained=False, scales=(1.0, 0.75, 0.5), asw=True, brm=True).eval()
+    with torch.no_grad():
+        out = m(torch.rand(1, 3, 96, 96))
+    assert out["logits"].shape[-2:] == (72, 72)  # ZoomNeXt predicts at the medium scale (0.75 x 96)
+    assert out["edge_logits"].shape[-2:] == (18, 18)  # BRM at stride 4 of the medium scale

@@ -267,3 +267,24 @@ So CamoXpert's maps are less confident. ZoomNeXt's UAL term, c(t) * mean(1 - |2p
 p = 0.5 and zero at p = 0 or 1, so it pushes pixels toward a confident answer; R5 had ual = 0.
 R7 adds it with R0's weight (1.0) and ramp; no value was tuned. Disclosure for the paper: this change was
 motivated by test-set results, it is one declared variant, and R5, R0 and R7 are all reported.
+
+## 10. R8 = ZoomNeXt-B5 + ASW + BRM (2026-11-28, declared before training)
+Question: do CamoXpert's two own modules improve a strong baseline? (R8 vs R0, same protocol.)
+Code: `models/zoomnext.py` class `ZoomNeXtB5Plus` (registry name `zoomnext_b5_plus`), config
+`configs/r8_zoomnext_asw_brm.py`. Forward pass, per decoder stage k = 5, 4, 3, 2 (deep to shallow):
+    l, m, s = tra_k(features of each scale)            # 64 channels each (ZoomNeXt, unchanged)
+    [ASW]   l, m, s = w_l*l, w_m*m, w_s*s             # w = softmax(MLP(GAP(l), GAP(m), GAP(s)))
+    x = RGPU_k( MHSIU_k(l, m, s) + upsample(x) )       # ZoomNeXt's fusion + refinement, unchanged
+then [BRM] x, edge = BRM(x); logits = predictor(tra_1(x)).
+Placement choices (state them in the paper):
+* ASW before every multi-scale fusion. ZoomNeXt fuses at 4 stages (CamoXpert at 3), so 4 ASW blocks.
+* BRM at the same place in the decoder as in CamoXpert (just before the prediction head). ZoomNeXt
+  fuses at the medium scale's resolution, so BRM runs at 84 x 84 for S = 448 (CamoXpert: 112 x 112).
+  ZoomNeXt's logits are at 0.75 S (336 x 336), same as R0; loss and evaluation resize them.
+* Loss = R0's (BCE 1.0 + UAL 1.0) + edge 0.2 (R5's weight; BRM's edge head needs supervision).
+  No IoU/SSIM, so R8 - R0 measures the modules (+ their edge supervision), nothing else.
+* Nothing tuned. Params: R0 84,773,821, R8 84,966,650 (+192,829).
+Checks (CPU, PyTorch 2.15): 35 unit tests pass, incl. `test_zoomnext_plus_without_modules_equals_zoomnext`
+(asw=False, brm=False gives bit-identical logits to ZoomNeXtB5 for the same seed) and output shapes.
+Not yet measured: GPU memory and speed on the VM (R0 peaked at 19.5 GB; the extra modules are small,
+but watch the first log lines).

@@ -1,9 +1,9 @@
 """Model registry: build_model(cfg["model"]) -> nn.Module."""
 
 from .camoxpert import CamoXpert
-from .zoomnext import ZoomNeXtB5
+from .zoomnext import ZoomNeXtB5, ZoomNeXtB5Plus
 
-MODELS = {"camoxpert": CamoXpert, "zoomnext_b5": ZoomNeXtB5}
+MODELS = {"camoxpert": CamoXpert, "zoomnext_b5": ZoomNeXtB5, "zoomnext_b5_plus": ZoomNeXtB5Plus}
 
 
 def build_model(model_cfg: dict, pretrained: bool = True, pretrained_path: str | None = None):
