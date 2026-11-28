@@ -250,3 +250,20 @@ batch 8, benchmark off; files C:/runs/timing_*/timing.json on the VM):
   first iteration; the run was stopped by hand (C:/runs/timing_R5_fp32_w4, not used).
 - With 2 workers GPU-Util averaged 69% (R5 fp32), so data loading partly limits speed. Accepted.
 
+
+## 9. After R5 and R0 (2026-11-28): R7 = CamoXpert + UAL
+Same protocol, single pass, R5 minus R0 (4 decimals from eval output):
+| set | Sm | wFm | MAE (lower better) | meanEm | maxEm | adpEm |
+|---|---|---|---|---|---|---|
+| CAMO | +0.0035 | -0.0109 | +0.0031 | -0.0027 | +0.0013 | -0.0063 |
+| CHAMELEON | +0.0046 | -0.0106 | +0.0033 | -0.0013 | +0.0051 | -0.0078 |
+| COD10K | +0.0039 | -0.0137 | +0.0022 | -0.0029 | +0.0044 | -0.0071 |
+| NC4K | +0.0035 | -0.0103 | +0.0026 | -0.0047 | +0.0004 | -0.0065 |
+Pattern on all 4 sets: CamoXpert wins the structure metric (Sm) and the best-threshold metric (maxEm);
+ZoomNeXt wins every metric that uses the raw grey values (wFm, MAE) or a fixed adaptive threshold (adpEm).
+Map check (saved uint8 maps, share of pixels with value 26..229, i.e. probability 0.1..0.9):
+CAMO R5 4.80% vs R0 2.05%; CHAMELEON 4.00% vs 1.55%; COD10K (first 810 of 2026 maps) 3.12% vs 1.41%.
+So CamoXpert's maps are less confident. ZoomNeXt's UAL term, c(t) * mean(1 - |2p-1|^2), is largest at
+p = 0.5 and zero at p = 0 or 1, so it pushes pixels toward a confident answer; R5 had ual = 0.
+R7 adds it with R0's weight (1.0) and ramp; no value was tuned. Disclosure for the paper: this change was
+motivated by test-set results, it is one declared variant, and R5, R0 and R7 are all reported.
